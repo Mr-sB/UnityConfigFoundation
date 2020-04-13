@@ -52,15 +52,38 @@ namespace Config.Loader
         private static IEnumerator LoadFromStreamingAssetsInternal(string relativePath, Action<string> onLoaded)
         {
             if (onLoaded == null) yield break;
+            
+            /*
+            Android平台：
+            Application.streamingAssetsPath + 你的资源
+            IOS平台：
+            "file://” + Application.streamingAssetsPath + 你的资源
+            其余平台以及下：
+            "file:///" + Application.streamingAssetsPath + 你的资源
+            */
             string path = Path.Combine(Application.streamingAssetsPath, relativePath);
+#if UNITY_EDITOR
+            path = "file:///" + path;
+#elif UNITY_IOS
+            path = "file://" + path;
+#elif !UNITY_ANDROID
+            path = "file:///" + path;
+#endif
+            
             UnityWebRequest request = UnityWebRequest.Get(path);
-            yield return request.SendWebRequest();
-            if (!request.isDone)
+            request.SendWebRequest();
+            yield return request;
+            if (request.isNetworkError)
             {
-                Debug.LogError("LoadFromStreamingAssets field:" + path);
+                Debug.LogError(request.error);
                 onLoaded(string.Empty);
             }
-            onLoaded(request.downloadHandler.text);
+            if (!request.isDone)
+            {
+                Debug.LogError("File:" + path + " does not exist!");
+                onLoaded(string.Empty);
+            }
+            onLoaded(request.downloadHandler != null ? request.downloadHandler.text : string.Empty);
         }
         
         public static string LoadFromPersistentData(string relativePath)
@@ -68,7 +91,7 @@ namespace Config.Loader
             string path = Path.Combine(Application.persistentDataPath, relativePath);
             if (!File.Exists(path))
             {
-                Debug.LogError("File:" + path + "does not exist!");
+                Debug.LogError("File:" + path + " does not exist!");
                 return string.Empty;
             }
             using (StreamReader reader = new StreamReader(path))
@@ -80,15 +103,15 @@ namespace Config.Loader
         /// </summary>
         public static string LoadFromResources(string relativePath)
         {
-            string path = Path.Combine(Application.persistentDataPath, relativePath);
-            if (!path.EndsWith(".bytes"))
-                path += ".bytes";
-            if (!File.Exists(path))
+            if (!relativePath.EndsWith(".bytes"))
+                relativePath += ".bytes";
+            var textAsset = Resources.Load<TextAsset>(relativePath);
+            if (textAsset == null)
             {
-                Debug.LogError("File:" + path + "does not exist!");
+                Debug.LogError("File:" + relativePath + " does not exist!");
                 return string.Empty;
             }
-            return Resources.Load<TextAsset>(relativePath).text;
+            return textAsset.text;
         }
     }
 }
