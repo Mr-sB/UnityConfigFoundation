@@ -7,7 +7,7 @@ namespace Config
     /// <summary>
     /// csv与class文件互相转换
     /// </summary>
-    public static class CVSGenerator
+    public static class CSVGenerator
     {
         private static readonly string ClassTemplate = "using System;" + Environment.NewLine
                                                        + "using System.Collections.Generic;" + Environment.NewLine
