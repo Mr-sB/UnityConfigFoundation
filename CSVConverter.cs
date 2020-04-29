@@ -47,7 +47,7 @@ namespace Config.Convert
                 {
                     var fieldInfo = fieldInfos[j];
                     if(fieldInfo == null) continue;
-                    //根据fieldInfo.FieldType确定数据类型，根据
+                    //根据fieldInfo.FieldType确定数据类型
                     fieldInfo.SetValue(data, FieldConverter.Convert(fieldInfo.FieldType, fieldContents[j]));
                 }
                 dataArray[i - 2] = data;

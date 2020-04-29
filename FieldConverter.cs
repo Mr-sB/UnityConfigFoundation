@@ -63,9 +63,9 @@ namespace Config.Convert
             return !mConverters.TryGetValue(fieldType, out var converter) ? null : converter(fieldContent);
         }
         
-        public static object Convert<T>(string fieldContent)
+        public static T Convert<T>(string fieldContent)
         {
-            return Convert(typeof(T), fieldContent);
+            return (T)Convert(typeof(T), fieldContent);
         }
 
         
