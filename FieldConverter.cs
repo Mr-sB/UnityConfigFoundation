@@ -29,6 +29,8 @@ namespace Config.Convert
                 {typeof(Vector2), fieldContent => fieldContent.Vector2Converter()},
                 {typeof(Vector3), fieldContent => fieldContent.Vector3Converter()},
                 {typeof(Vector4), fieldContent => fieldContent.Vector4Converter()},
+                {typeof(Vector2Int), fieldContent => fieldContent.Vector2IntConverter()},
+                {typeof(Vector3Int), fieldContent => fieldContent.Vector3IntConverter()},
                 {typeof(Quaternion), fieldContent => fieldContent.QuaternionConverter()},
                 {typeof(Color), fieldContent => fieldContent.ColorConverter()},
                 //--------------数组数据转换--------------
@@ -43,6 +45,8 @@ namespace Config.Convert
                 {typeof(Vector2[]), Vector2ArrayConverter},
                 {typeof(Vector3[]), Vector3ArrayConverter},
                 {typeof(Vector4[]), Vector4ArrayConverter},
+                {typeof(Vector2Int[]), Vector2IntArrayConverter},
+                {typeof(Vector3Int[]), Vector3IntArrayConverter},
                 {typeof(Quaternion[]), QuaternionArrayConverter},
                 {typeof(Color[]), ColorArrayConverter}
             };
@@ -147,6 +151,24 @@ namespace Config.Convert
                 vector4[i] = strs[i].FloatConverter();
             return vector4;
         }
+        
+        public static Vector2Int Vector2IntConverter(this string fieldContent)
+        {
+            var strs = FieldSplit(fieldContent);
+            Vector2Int vector2Int = new Vector2Int();
+            for (int i = 0, len = Mathf.Min(strs.Length, 2); i < len; i++)
+                vector2Int[i] = strs[i].IntConverter();
+            return vector2Int;
+        }
+        
+        public static Vector3Int Vector3IntConverter(this string fieldContent)
+        {
+            var strs = FieldSplit(fieldContent);
+            Vector3Int vector3Int = new Vector3Int();
+            for (int i = 0, len = Mathf.Min(strs.Length, 3); i < len; i++)
+                vector3Int[i] = strs[i].IntConverter();
+            return vector3Int;
+        }
 
         public static Quaternion QuaternionConverter(this string fieldContent)
         {
@@ -229,6 +251,16 @@ namespace Config.Convert
         public static Vector4[] Vector4ArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, Vector4Converter);
+        }
+        
+        public static Vector2Int[] Vector2IntArrayConverter(this string fieldContent)
+        {
+            return ArrayConverter(fieldContent, Vector2IntConverter);
+        }
+
+        public static Vector3Int[] Vector3IntArrayConverter(this string fieldContent)
+        {
+            return ArrayConverter(fieldContent, Vector3IntConverter);
         }
 
         public static Quaternion[] QuaternionArrayConverter(this string fieldContent)
