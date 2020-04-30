@@ -60,7 +60,12 @@ namespace Config.Convert
             //初始化
             if(mConverters == null)
                 Init();
-            return !mConverters.TryGetValue(fieldType, out var converter) ? null : converter(fieldContent);
+            if (mConverters.TryGetValue(fieldType, out var converter))
+                return converter(fieldContent);
+            if (fieldType.IsEnum)
+                return fieldContent.IntConverter();
+            Debug.LogError(string.Format("Can not convert {0} type data!", fieldType));
+            return null;
         }
         
         public static T Convert<T>(string fieldContent)
