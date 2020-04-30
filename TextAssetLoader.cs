@@ -77,11 +77,13 @@ namespace Config.Loader
             {
                 Debug.LogError(request.error);
                 onLoaded(string.Empty);
+                yield break;
             }
             if (!request.isDone)
             {
                 Debug.LogError("File:" + path + " does not exist!");
                 onLoaded(string.Empty);
+                yield break;
             }
             onLoaded(request.downloadHandler != null ? request.downloadHandler.text : string.Empty);
         }

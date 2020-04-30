@@ -79,7 +79,7 @@ namespace Config.Convert
                 }
             }
 
-            //遍历所有数据行 从2开始。0位字段名，1为字段类型或者备注
+            //遍历所有数据行 从2开始。0为字段名，1为字段类型或者备注
             for (int i = 2, rowLen = rows.Length; i < rowLen; i++)
             {
                 //分割数据行
