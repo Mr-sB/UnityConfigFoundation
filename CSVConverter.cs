@@ -36,7 +36,7 @@ namespace Config.Convert
 
             int rowLen = rows.Length;
             T[] dataArray = new T[rowLen - 2];
-            //遍历所有数据行 从2开始。0位字段名，1为字段类型或者备注
+            //遍历所有数据行 从2开始。0为字段名，1为字段类型或者备注
             for (int i = 2; i < rowLen; i++)
             {
                 //分割数据行
