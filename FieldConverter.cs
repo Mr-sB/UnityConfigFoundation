@@ -183,7 +183,8 @@ namespace Config.Convert
         public static Color ColorConverter(this string fieldContent)
         {
             Color color = Color.black;
-            if (fieldContent.Contains(";"))
+            //Color32形式(255;255;255) 或者 单独的数字形式(255)
+            if (fieldContent.Contains(";") || fieldContent.Length <= 3)
             {
                 var strs = FieldSplit(fieldContent);
                 for (int i = 0, len = Mathf.Min(strs.Length, 4); i < len; i++)
