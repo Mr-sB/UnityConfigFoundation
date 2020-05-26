@@ -19,7 +19,7 @@ namespace Config
             //除去第一行的字段名和第二行的字段类型
             Records = new CSVRecord[recordLen - 2];
             for (int i = 2; i < recordLen; i++)
-                Records[i] = new CSVRecord(FieldNames, rows[i].Split(','));
+                Records[i - 2] = new CSVRecord(FieldNames, rows[i].Split(','));
         }
         
         public static CSVTable GetCSVTable(string csvContent)
