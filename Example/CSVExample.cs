@@ -11,7 +11,7 @@ namespace Config.Example
             string csvStr = CSVGenerator.Class2CSV<ExampleTestData>();
             Debug.LogError("Auto generate csv:\n" + csvStr);
 
-            string classStr = CSVGenerator.CSV2Class(nameof(ExampleTestData), csvStr);
+            string classStr = CSVGenerator.CSV2Class(csvStr, null, nameof(ExampleTestData));
             Debug.LogError("Auto generate class:\n" + classStr);
             
             csvStr += "1,#cccccc,2,1;2;3|4;5;6" + Environment.NewLine + "3,#dddddd,4,7;8;9|10;11;12|7;7;7";

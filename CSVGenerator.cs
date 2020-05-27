@@ -9,32 +9,47 @@ namespace Config
     /// </summary>
     public static class CSVGenerator
     {
-        private static readonly string ClassTemplate = "using System;" + Environment.NewLine
-                                                       + "using System.Collections.Generic;" + Environment.NewLine
-                                                       + "using UnityEngine;" + Environment.NewLine
-                                                       + Environment.NewLine
-                                                       + "namespace Config.Data" + Environment.NewLine
-                                                       + "{{" + Environment.NewLine
-                                                       + "\tpublic class {0}" + Environment.NewLine
-                                                       + "\t{{" + Environment.NewLine
-                                                       + "{1}" + Environment.NewLine
-                                                       + "\t}}" + Environment.NewLine
-                                                       + "}}" + Environment.NewLine;
-        
-        public static string CSV2Class(string className, string csvContent)
+        private static readonly string ClassHeadTemplate = "using System;" + Environment.NewLine
+                                                           + "using System.Collections.Generic;" + Environment.NewLine
+                                                           + "using UnityEngine;" + Environment.NewLine
+                                                           + Environment.NewLine;
+
+        private static readonly string ClassDefineWithNameSpace = "namespace {0}" + Environment.NewLine
+                                                                  + "{{" + Environment.NewLine
+                                                                  + "\t[Serializable]" + Environment.NewLine
+                                                                  + "\tpublic class {1}" + Environment.NewLine
+                                                                  + "\t{{" + Environment.NewLine
+                                                                  + "{2}" + Environment.NewLine
+                                                                  + "\t}}" + Environment.NewLine
+                                                                  + "}}" + Environment.NewLine;
+
+        private static readonly string ClassDefineWithoutNameSpace = "[Serializable]" + Environment.NewLine
+                                                                     + "public class {0}" + Environment.NewLine
+                                                                     + "{{" + Environment.NewLine
+                                                                     + "{1}" + Environment.NewLine
+                                                                     + "}}" + Environment.NewLine;
+
+        public static string CSV2Class(string csvContent, string namespaceName, string className)
         {
+            bool hasNameSpace = !string.IsNullOrWhiteSpace(namespaceName);
+            string space = hasNameSpace ? "\t\t" : "\t";
             var table = CSVTable.GetCSVTable(csvContent);
             StringBuilder sb = new StringBuilder();
             for (int i = 0, len = table.FieldNames.Length; i < len; i++)
             {
-                sb.Append("\t\tpublic ");
+                sb.Append(space);
+                sb.Append("public ");
                 sb.Append(table.FieldTypes[i]);
                 sb.Append(" ");
                 sb.Append(table.FieldNames[i]);
                 sb.Append(";");
-                sb.Append(Environment.NewLine);
+                if(i < len - 1)
+                    sb.Append(Environment.NewLine);
             }
-            return string.Format(ClassTemplate, className, sb);
+
+            if (hasNameSpace)
+                return ClassHeadTemplate + string.Format(ClassDefineWithNameSpace, namespaceName, className, sb);
+            return ClassHeadTemplate + string.Format(ClassDefineWithoutNameSpace, className, sb);
         }
         
         public static string Class2CSV<T>()
