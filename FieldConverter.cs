@@ -24,6 +24,7 @@ namespace Config.Convert
                 {typeof(byte), fieldContent => fieldContent.ByteConverter()},
                 {typeof(short), fieldContent => fieldContent.ShortConverter()},
                 {typeof(int), fieldContent => fieldContent.IntConverter()},
+                {typeof(uint), fieldContent => fieldContent.UIntConverter()},
                 {typeof(float), fieldContent => fieldContent.FloatConverter()},
                 {typeof(double), fieldContent => fieldContent.DoubleConverter()},
                 {typeof(Vector2), fieldContent => fieldContent.Vector2Converter()},
@@ -40,6 +41,7 @@ namespace Config.Convert
                 {typeof(byte[]), ByteArrayConverter},
                 {typeof(short[]), ShortArrayConverter},
                 {typeof(int[]), IntArrayConverter},
+                {typeof(uint[]), UIntArrayConverter},
                 {typeof(float[]), FloatArrayConverter},
                 {typeof(double[]), DoubleArrayConverter},
                 {typeof(Vector2[]), Vector2ArrayConverter},
@@ -113,6 +115,11 @@ namespace Config.Convert
         public static int IntConverter(this string fieldContent)
         {
             return int.TryParse(fieldContent, out var result) ? result : 0;
+        }
+        
+        public static uint UIntConverter(this string fieldContent)
+        {
+            return uint.TryParse(fieldContent, out var result) ? result : 0;
         }
         
         public static float FloatConverter(this string fieldContent)
@@ -227,6 +234,11 @@ namespace Config.Convert
         public static int[] IntArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, IntConverter);
+        }
+        
+        public static uint[] UIntArrayConverter(this string fieldContent)
+        {
+            return ArrayConverter(fieldContent, UIntConverter);
         }
         
         public static float[] FloatArrayConverter(this string fieldContent)
