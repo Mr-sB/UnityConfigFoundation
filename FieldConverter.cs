@@ -69,7 +69,7 @@ namespace Config.Convert
             if (mConverters.TryGetValue(fieldType, out var converter))
                 return converter(fieldContent);
             if (fieldType.IsEnum)
-                return fieldContent.IntConverter();
+                return fieldContent.EnumConverter(fieldType);
             Debug.LogError(string.Format("Can not convert {0} type data!", fieldType));
             return null;
         }
@@ -81,6 +81,11 @@ namespace Config.Convert
 
         
         #region SingleDataConverters
+        public static object EnumConverter(this string fieldContent, Type fieldType)
+        {
+            return int.TryParse(fieldContent, out var value) ? value : Enum.Parse(fieldType, fieldContent);
+        }
+        
         public static char CharConverter(this string fieldContent)
         {
             return string.IsNullOrEmpty(fieldContent) ? ' ' : fieldContent[0];
