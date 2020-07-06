@@ -83,7 +83,15 @@ namespace Config.Convert
         #region SingleDataConverters
         public static object EnumConverter(this string fieldContent, Type fieldType)
         {
-            return int.TryParse(fieldContent, out var value) ? value : Enum.Parse(fieldType, fieldContent);
+            if (int.TryParse(fieldContent, out var value)) return value;
+            try
+            {
+                return Enum.Parse(fieldType, fieldContent);
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
         }
         
         public static char CharConverter(this string fieldContent)
