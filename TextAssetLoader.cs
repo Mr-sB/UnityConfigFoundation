@@ -101,12 +101,15 @@ namespace Config.Loader
         }
         
         /// <summary>
-        /// Resources下的文本文件必须以.bytes结尾。例如Test.csv.bytes
+        /// Resources下的二进制文件必须以.bytes结尾。例如Test.xxx.bytes
+        /// Please notice that files with the .txt and .bytes extension will be treated as text and binary files, respectively.
+        /// Do not attempt to store a binary file using the .txt extension, as this will create unexpected behaviour when attempting to read data from it.
         /// </summary>
         public static string LoadFromResources(string relativePath)
         {
-            if (!relativePath.EndsWith(".bytes"))
-                relativePath += ".bytes";
+            //Resources下的文本文件不能加.txt后缀
+            if (relativePath.EndsWith(".txt"))
+                relativePath = relativePath.Substring(0, relativePath.Length - 4);
             var textAsset = Resources.Load<TextAsset>(relativePath);
             if (textAsset == null)
             {
