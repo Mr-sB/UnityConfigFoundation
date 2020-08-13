@@ -10,6 +10,7 @@ namespace Config.Convert
     public static class FieldConverter
     {
         private static Dictionary<Type, Func<string, object>> mConverters;
+        private static readonly string[] mNullStringArray = new string[0];
 
         private static void Init()
         {
@@ -319,7 +320,7 @@ namespace Config.Convert
         /// </summary>
         private static string[] FieldSplit(string fieldContent)
         {
-            return fieldContent.Split(';');
+            return string.IsNullOrEmpty(fieldContent) ? mNullStringArray : fieldContent.Split(';');
         }
         
         /// <summary>
@@ -327,7 +328,7 @@ namespace Config.Convert
         /// </summary>
         private static string[] ArraySplit(string fieldContent)
         {
-            return fieldContent.Split('|');
+            return string.IsNullOrEmpty(fieldContent) ? mNullStringArray : fieldContent.Split('|');
         }
     }
 }
