@@ -1,8 +1,7 @@
 ﻿using System;
-using Config.Convert;
 using UnityEngine;
 
-namespace Config.Example
+namespace GameUtil.Config.Example
 {
     public class CSVExample : MonoBehaviour
     {

@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using UnityEngine;
 
-namespace Config
+namespace GameUtil.Config
 {
     /// <summary>
     /// csv与class文件互相转换

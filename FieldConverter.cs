@@ -1,58 +1,47 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
-namespace Config.Convert
+namespace GameUtil.Config
 {
     /// <summary>
     /// csv单元格数据转换为字段对象
     /// </summary>
-    public static class FieldConverter
+    public static partial class FieldConverter
     {
-        private static Dictionary<Type, Func<string, object>> mConverters;
+        private static Dictionary<Type, MethodInfo> mConverters;
         private static readonly string[] mNullStringArray = new string[0];
-
+        private static readonly Type mVoidType = typeof(void);
+        private static readonly Type mStringType = typeof(string);
+        
         private static void Init()
         {
             if(mConverters != null) return;
             //注册转换函数
-            mConverters = new Dictionary<Type, Func<string, object>>
+            mConverters = new Dictionary<Type, MethodInfo>();
+            foreach (var methodInfo in typeof(FieldConverter).GetMethods(BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic))
             {
-                //--------------单个数据转换--------------
-                {typeof(char), fieldContent => fieldContent.CharConverter()},
-                {typeof(string), StringConverter},
-                {typeof(bool), fieldContent => fieldContent.BoolConverter()},
-                {typeof(byte), fieldContent => fieldContent.ByteConverter()},
-                {typeof(short), fieldContent => fieldContent.ShortConverter()},
-                {typeof(int), fieldContent => fieldContent.IntConverter()},
-                {typeof(uint), fieldContent => fieldContent.UIntConverter()},
-                {typeof(float), fieldContent => fieldContent.FloatConverter()},
-                {typeof(double), fieldContent => fieldContent.DoubleConverter()},
-                {typeof(Vector2), fieldContent => fieldContent.Vector2Converter()},
-                {typeof(Vector3), fieldContent => fieldContent.Vector3Converter()},
-                {typeof(Vector4), fieldContent => fieldContent.Vector4Converter()},
-                {typeof(Vector2Int), fieldContent => fieldContent.Vector2IntConverter()},
-                {typeof(Vector3Int), fieldContent => fieldContent.Vector3IntConverter()},
-                {typeof(Quaternion), fieldContent => fieldContent.QuaternionConverter()},
-                {typeof(Color), fieldContent => fieldContent.ColorConverter()},
-                //--------------数组数据转换--------------
-                {typeof(char[]), CharArrayConverter},
-                {typeof(string[]), StringArrayConverter},
-                {typeof(bool[]), BoolArrayConverter},
-                {typeof(byte[]), ByteArrayConverter},
-                {typeof(short[]), ShortArrayConverter},
-                {typeof(int[]), IntArrayConverter},
-                {typeof(uint[]), UIntArrayConverter},
-                {typeof(float[]), FloatArrayConverter},
-                {typeof(double[]), DoubleArrayConverter},
-                {typeof(Vector2[]), Vector2ArrayConverter},
-                {typeof(Vector3[]), Vector3ArrayConverter},
-                {typeof(Vector4[]), Vector4ArrayConverter},
-                {typeof(Vector2Int[]), Vector2IntArrayConverter},
-                {typeof(Vector3Int[]), Vector3IntArrayConverter},
-                {typeof(Quaternion[]), QuaternionArrayConverter},
-                {typeof(Color[]), ColorArrayConverter}
-            };
+                if(methodInfo.GetCustomAttribute<FieldConverterAttribute>() == null) continue;
+                var convertType = methodInfo.ReturnType;
+                if (convertType == mVoidType)
+                {
+                    Debug.LogError("FieldConverter method's return type can not be void!");
+                    continue;
+                }
+                var parameters = methodInfo.GetParameters();
+                if (parameters.Length != 1 || parameters[0].ParameterType != mStringType)
+                {
+                    Debug.LogError("FieldConverter method's parameters count can be only one string!");
+                    continue;
+                }
+                if (mConverters.ContainsKey(convertType))
+                {
+                    Debug.LogError($"There is already one same return type method added! ReturnType: {convertType}");
+                    continue;
+                }
+                mConverters.Add(convertType, methodInfo);
+            }
         }
 
         public static void Dispose()
@@ -68,7 +57,17 @@ namespace Config.Convert
             if(mConverters == null)
                 Init();
             if (mConverters.TryGetValue(fieldType, out var converter))
-                return converter(fieldContent);
+            {
+                try
+                {
+                    return converter.Invoke(null, new object[] {fieldContent});
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e);
+                    return null;
+                }
+            }
             if (fieldType.IsEnum)
                 return fieldContent.EnumConverter(fieldType);
             Debug.LogError(string.Format("Can not convert {0} type data!", fieldType));
@@ -95,17 +94,20 @@ namespace Config.Convert
             }
         }
         
+        [FieldConverter]
         public static char CharConverter(this string fieldContent)
         {
             return string.IsNullOrEmpty(fieldContent) ? ' ' : fieldContent[0];
         }
         
+        [FieldConverter]
         public static string StringConverter(this string fieldContent)
         {
             return fieldContent;
         }
         
         /// <param name="fieldContent">可以是整数(大于0为true,其余为false)/TRUE/True/true等</param>
+        [FieldConverter]
         public static bool BoolConverter(this string fieldContent)
         {
             if (string.IsNullOrEmpty(fieldContent)) return false;
@@ -116,36 +118,49 @@ namespace Config.Convert
             return bool.TryParse(fieldContent, out var result) && result;
         }
         
+        [FieldConverter]
         public static byte ByteConverter(this string fieldContent)
         {
             return byte.TryParse(fieldContent, out var result) ? result : (byte)0;
         }
         
+        [FieldConverter]
         public static short ShortConverter(this string fieldContent)
         {
             return short.TryParse(fieldContent, out var result) ? result : (short)0;
         }
         
+        [FieldConverter]
         public static int IntConverter(this string fieldContent)
         {
             return int.TryParse(fieldContent, out var result) ? result : 0;
         }
         
+        [FieldConverter]
         public static uint UIntConverter(this string fieldContent)
         {
             return uint.TryParse(fieldContent, out var result) ? result : 0;
         }
         
+        [FieldConverter]
+        public static long LongConverter(this string fieldContent)
+        {
+            return long.TryParse(fieldContent, out var result) ? result : 0;
+        }
+        
+        [FieldConverter]
         public static float FloatConverter(this string fieldContent)
         {
             return float.TryParse(fieldContent, out var result) ? result : 0;
         }
         
+        [FieldConverter]
         public static double DoubleConverter(this string fieldContent)
         {
             return double.TryParse(fieldContent, out var result) ? result : 0;
         }
         
+        [FieldConverter]
         public static Vector2 Vector2Converter(this string fieldContent)
         {
             var strs = FieldSplit(fieldContent);
@@ -155,6 +170,7 @@ namespace Config.Convert
             return vector2;
         }
 
+        [FieldConverter]
         public static Vector3 Vector3Converter(this string fieldContent)
         {
             var strs = FieldSplit(fieldContent);
@@ -164,6 +180,7 @@ namespace Config.Convert
             return vector3;
         }
 
+        [FieldConverter]
         public static Vector4 Vector4Converter(this string fieldContent)
         {
             var strs = FieldSplit(fieldContent);
@@ -173,6 +190,7 @@ namespace Config.Convert
             return vector4;
         }
         
+        [FieldConverter]
         public static Vector2Int Vector2IntConverter(this string fieldContent)
         {
             var strs = FieldSplit(fieldContent);
@@ -182,6 +200,7 @@ namespace Config.Convert
             return vector2Int;
         }
         
+        [FieldConverter]
         public static Vector3Int Vector3IntConverter(this string fieldContent)
         {
             var strs = FieldSplit(fieldContent);
@@ -191,6 +210,7 @@ namespace Config.Convert
             return vector3Int;
         }
 
+        [FieldConverter]
         public static Quaternion QuaternionConverter(this string fieldContent)
         {
             var strs = FieldSplit(fieldContent);
@@ -201,6 +221,7 @@ namespace Config.Convert
         }
         
         /// <param name="fieldContent">可以是颜色字符串([#]ffffff)或者0-255的字节数据</param>
+        [FieldConverter]
         public static Color ColorConverter(this string fieldContent)
         {
             Color color = Color.black;
@@ -220,81 +241,103 @@ namespace Config.Convert
 
         
         #region ArrayDataConverters
+        [FieldConverter]
         public static char[] CharArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, CharConverter);
         }
         
+        [FieldConverter]
         public static string[] StringArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, StringConverter);
         }
         
+        [FieldConverter]
         public static bool[] BoolArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, BoolConverter);
         }
         
+        [FieldConverter]
         public static byte[] ByteArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, ByteConverter);
         }
         
+        [FieldConverter]
         public static short[] ShortArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, ShortConverter);
         }
         
+        [FieldConverter]
         public static int[] IntArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, IntConverter);
         }
         
+        [FieldConverter]
         public static uint[] UIntArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, UIntConverter);
         }
         
+        [FieldConverter]
+        public static long[] LongArrayConverter(this string fieldContent)
+        {
+            return ArrayConverter(fieldContent, LongConverter);
+        }
+        
+        [FieldConverter]
         public static float[] FloatArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, FloatConverter);
         }
         
+        [FieldConverter]
         public static double[] DoubleArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, DoubleConverter);
         }
         
+        [FieldConverter]
         public static Vector2[] Vector2ArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, Vector2Converter);
         }
 
+        [FieldConverter]
         public static Vector3[] Vector3ArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, Vector3Converter);
         }
 
+        [FieldConverter]
         public static Vector4[] Vector4ArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, Vector4Converter);
         }
         
+        [FieldConverter]
         public static Vector2Int[] Vector2IntArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, Vector2IntConverter);
         }
 
+        [FieldConverter]
         public static Vector3Int[] Vector3IntArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, Vector3IntConverter);
         }
 
+        [FieldConverter]
         public static Quaternion[] QuaternionArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, QuaternionConverter);
         }
 
+        [FieldConverter]
         public static Color[] ColorArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, ColorConverter);

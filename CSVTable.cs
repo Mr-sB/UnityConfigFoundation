@@ -1,6 +1,6 @@
 using System;
 
-namespace Config
+namespace GameUtil.Config
 {
     /// <summary>
     /// CSV表格数据

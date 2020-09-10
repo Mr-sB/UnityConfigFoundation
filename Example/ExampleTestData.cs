@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Config.Example
+namespace GameUtil.Config.Example
 {
     public class ExampleTestData
     {

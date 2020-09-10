@@ -7,7 +7,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Config.Loader
+namespace GameUtil.Config
 {
     /// <summary>
     /// 加载文本资源

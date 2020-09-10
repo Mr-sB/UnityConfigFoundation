@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-namespace Config.Convert
+namespace GameUtil.Config
 {
     /// <summary>
     /// csv表格数据转换为实例对象

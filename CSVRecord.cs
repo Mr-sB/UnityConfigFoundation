@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Config
+namespace GameUtil.Config
 {
     public class CSVRecord
     {
