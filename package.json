@@ -1,0 +1,15 @@
+{
+  "name": "com.gh-zj.configfoundation",
+  "version": "1.0.0",
+  "displayName": "Config Foundation",
+  "description": "Read/Write csv table and automatically generate data objects according to CSV configuration table.",
+  "keywords": [
+    "config",
+    "csv",
+    "unity"
+  ],
+  "author": {
+    "name": "gh-zj",
+    "email": "wustzhangjie@gmail.com"
+  }
+}
