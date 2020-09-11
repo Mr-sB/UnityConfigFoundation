@@ -1,5 +1,5 @@
 # UnityConfigFoundation
-Automatically generate data objects according to CSV configuration table.
+Read/Write csv table and automatically generate data objects according to CSV configuration table.
 
 ## Feature
 * Support table cells contain commas and double quotes.
