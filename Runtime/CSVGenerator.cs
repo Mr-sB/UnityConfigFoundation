@@ -33,17 +33,17 @@ namespace GameUtil.Config
         {
             bool hasNameSpace = !string.IsNullOrWhiteSpace(namespaceName);
             string space = hasNameSpace ? "\t\t" : "\t";
-            var table = CSVTable.GetCSVTable(csvContent);
+            var table = new CSVTableReader(csvContent);
             StringBuilder sb = new StringBuilder();
-            for (int i = 0, len = table.FieldNames.Length; i < len; i++)
+            for (int i = 0, column = table.Column; i < column; i++)
             {
                 sb.Append(space);
                 sb.Append("public ");
-                sb.Append(table.FieldTypes[i]);
+                sb.Append(table.Descriptions[i]);
                 sb.Append(" ");
-                sb.Append(table.FieldNames[i]);
+                sb.Append(table.Headers[i]);
                 sb.Append(";");
-                if(i < len - 1)
+                if(i < column - 1)
                     sb.Append(Environment.NewLine);
             }
 
@@ -52,43 +52,25 @@ namespace GameUtil.Config
             return ClassHeadTemplate + string.Format(ClassDefineWithoutNameSpace, className, sb);
         }
         
-        public static string Class2CSV<T>()
+        public static CSVTableWriter Class2CSVTable<T>()
         {
-            return Class2CSV(typeof(T));
+            return Class2CSVTable(typeof(T));
         }
 
-        public static string Class2CSV(string classNameWithNamespace)
-        {
-            return Class2CSV(Type.GetType(classNameWithNamespace));
-        }
-
-        public static string Class2CSV(Type type)
+        public static CSVTableWriter Class2CSVTable(Type type)
         {
             if (type == null)
             {
                 Debug.LogError("Type is null!");
-                return string.Empty;
+                return null;
             }
-
-            StringBuilder fieldNames = new StringBuilder();
-            StringBuilder fieldTypes = new StringBuilder();
+            var csvTableWriter = new CSVTableWriter();
             foreach (var fieldInfo in type.GetFields())
             {
-                if (fieldNames.Length != 0)
-                    fieldNames.Append(",");
-                fieldNames.Append(fieldInfo.Name);
-
-                
-                if (fieldTypes.Length != 0)
-                    fieldTypes.Append(",");
-                fieldTypes.Append(fieldInfo.FieldType.Name);
+                csvTableWriter.Headers.Add(fieldInfo.Name);
+                csvTableWriter.Descriptions.Add(fieldInfo.FieldType.Name);
             }
-
-            if (fieldNames.Length != 0)
-                fieldNames.Append(Environment.NewLine);
-            if (fieldTypes.Length != 0)
-                fieldTypes.Append(Environment.NewLine);
-            return fieldNames.ToString() + fieldTypes;
+            return csvTableWriter;
         }
     }
 }
