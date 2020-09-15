@@ -11,7 +11,6 @@ namespace GameUtil.Config
     public static partial class FieldConverter
     {
         private static Dictionary<Type, MethodInfo> mConverters;
-        private static readonly string[] mNullStringArray = new string[0];
         private static readonly Type mVoidType = typeof(void);
         private static readonly Type mStringType = typeof(string);
         
@@ -363,7 +362,7 @@ namespace GameUtil.Config
         /// </summary>
         private static string[] FieldSplit(string fieldContent)
         {
-            return string.IsNullOrEmpty(fieldContent) ? mNullStringArray : fieldContent.Split(';');
+            return string.IsNullOrEmpty(fieldContent) ? new string[0] : fieldContent.Split(';');
         }
         
         /// <summary>
@@ -371,7 +370,7 @@ namespace GameUtil.Config
         /// </summary>
         private static string[] ArraySplit(string fieldContent)
         {
-            return string.IsNullOrEmpty(fieldContent) ? mNullStringArray : fieldContent.Split('|');
+            return string.IsNullOrEmpty(fieldContent) ? new string[0] : fieldContent.Split('|');
         }
     }
 }
