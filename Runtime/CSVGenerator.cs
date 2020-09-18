@@ -30,11 +30,11 @@ namespace GameUtil.Config
                                                                      + "{1}" + Environment.NewLine
                                                                      + "}}" + Environment.NewLine;
 
-        public static string CSV2Class(string csvContent, string namespaceName, string className)
+        public static string CSV2Class(string csvContent, string namespaceName, string className, char cellSeparator = CSVDataHelper.CommaCharacter)
         {
             bool hasNameSpace = !string.IsNullOrWhiteSpace(namespaceName);
             string space = hasNameSpace ? "\t\t" : "\t";
-            var table = new CSVTableReader(csvContent);
+            var table = new CSVTableReader(csvContent, cellSeparator);
             StringBuilder sb = new StringBuilder();
             for (int i = 0, column = table.Column; i < column; i++)
             {
@@ -53,19 +53,19 @@ namespace GameUtil.Config
             return ClassHeadTemplate + string.Format(ClassDefineWithoutNameSpace, className, sb);
         }
         
-        public static CSVTableWriter Class2CSVTable<T>()
+        public static CSVTableWriter Class2CSVTable<T>(char cellSeparator = CSVDataHelper.CommaCharacter)
         {
-            return Class2CSVTable(typeof(T));
+            return Class2CSVTable(typeof(T), cellSeparator);
         }
 
-        public static CSVTableWriter Class2CSVTable(Type type)
+        public static CSVTableWriter Class2CSVTable(Type type, char cellSeparator = CSVDataHelper.CommaCharacter)
         {
             if (type == null)
             {
                 Debug.LogError("Type is null!");
                 return null;
             }
-            var csvTableWriter = new CSVTableWriter();
+            var csvTableWriter = new CSVTableWriter(cellSeparator);
             foreach (var fieldInfo in type.GetFields())
             {
                 csvTableWriter.Headers.Add(fieldInfo.Name);

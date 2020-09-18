@@ -11,25 +11,25 @@ namespace GameUtil.Config
     /// </summary>
     public static class CSVConverter
     {
-        public static List<T> Convert<T>(string csvContent) where T : new()
+        public static List<T> Convert<T>(string csvContent, char cellSeparator = CSVDataHelper.CommaCharacter) where T : new()
         {
-            if (!TryInit<T>(csvContent, out var csvTable, out var fieldInfos)) return null;
+            if (!TryInit<T>(csvContent, cellSeparator, out var csvTable, out var fieldInfos)) return null;
             List<T> dataList = new List<T>(csvTable.Records.Length);
             foreach (var data in GetEnumerator<T>(csvTable.Records, fieldInfos))
                 dataList.Add(data);
             return dataList;
         }
         
-        public static IEnumerable<T> ConvertEnumerator<T>(string csvContent) where T : new()
+        public static IEnumerable<T> ConvertEnumerator<T>(string csvContent, char cellSeparator = CSVDataHelper.CommaCharacter) where T : new()
         {
-            if (!TryInit<T>(csvContent, out var csvTable, out var fieldInfos)) yield break;
+            if (!TryInit<T>(csvContent, cellSeparator, out var csvTable, out var fieldInfos)) yield break;
             foreach (var data in GetEnumerator<T>(csvTable.Records, fieldInfos))
                 yield return data;
         }
 
-        private static bool TryInit<T>(string csvContent, out CSVTableReader csvTableReader, out FieldInfo[] fieldInfos)
+        private static bool TryInit<T>(string csvContent, char cellSeparator, out CSVTableReader csvTableReader, out FieldInfo[] fieldInfos)
         {
-            csvTableReader = new CSVTableReader(csvContent);
+            csvTableReader = new CSVTableReader(csvContent, cellSeparator);
             fieldInfos = null;
             if (csvTableReader == null) return false;
 
