@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TinyCSV</name>
+    </assembly>
+    <members>
+        <member name="M:TinyCSV.CSVDataHelper.GetCSVRowArray(System.String,System.Char,System.Boolean)">
+            <summary>
+            Split csv table by \n or \r\n.
+            </summary>
+            <param name="csvContent">CSV content.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+            <param name="supportCellMultiline">If true, support multiline cell but slower, otherwise not support multiline cell but faster.</param>
+            <returns>CSV rows.</returns>
+        </member>
+        <member name="M:TinyCSV.CSVDataHelper.GetCSVRowList(System.String,System.Char,System.Boolean)">
+            <summary>
+            Split csv table by \n or \r\n.
+            </summary>
+            <param name="csvContent">CSV content.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+            <param name="supportCellMultiline">If true, support multiline cell but slower, otherwise not support multiline cell but faster.</param>
+            <returns>CSV rows.</returns>
+        </member>
+        <member name="M:TinyCSV.CSVDataHelper.GetCSVDecodeRow(System.String,System.Char,System.Int32)">
+            <summary>
+            Decode csv row content.
+            </summary>
+            <param name="rowContent">CSV row content.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+            <param name="capacity">List capacity.</param>
+            <returns>Cell list.</returns>
+        </member>
+        <member name="M:TinyCSV.CSVDataHelper.GetCSVEncodeRow(System.Collections.Generic.List{System.String},System.Char)">
+            <summary>
+            Encode cells to csv form.
+            </summary>
+            <param name="cellList">Cell list.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+            <returns>Encode row.</returns>
+        </member>
+        <member name="M:TinyCSV.CSVDataHelper.StringSplit(System.String,System.String[],System.StringSplitOptions)">
+            <summary>
+            Split string by string array separators.
+            </summary>
+        </member>
+        <member name="F:TinyCSV.NewLineStyle.Environment">
+            <summary>
+            \r\n for non-Unix platforms, or \n for Unix platforms.
+            </summary>
+        </member>
+        <member name="F:TinyCSV.NewLineStyle.Unix">
+            <summary>
+            \n
+            </summary>
+        </member>
+        <member name="F:TinyCSV.NewLineStyle.NonUnix">
+            <summary>
+            \r\n
+            </summary>
+        </member>
+        <member name="M:TinyCSV.CSVRecordReader.#ctor(System.String[],System.String,System.Char)">
+            <summary>
+            Create a CSVRecordReader.
+            </summary>
+            <param name="headers">Headres</param>
+            <param name="record">CSV row data.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+        </member>
+        <member name="M:TinyCSV.CSVRecordWriter.#ctor(System.Char)">
+            <summary>
+            Create a empty CSVRecordWriter.
+            <param name="cellSeparator">CSV cells separator.</param>
+            </summary>
+        </member>
+        <member name="M:TinyCSV.CSVRecordWriter.#ctor(System.String,System.Char,System.Int32)">
+            <summary>
+            Create a CSVRecordWriter by CSV row data.
+            </summary>
+            <param name="record">CSV row data.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+            <param name="capacity">List capacity.</param>
+        </member>
+        <member name="M:TinyCSV.CSVRecordWriter.#ctor(System.Collections.Generic.IEnumerable{System.String},System.Char)">
+            <summary>
+            Create a CSVRecordWriter by cells.
+            </summary>
+            <param name="cells">IEnumerable cells.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+        </member>
+        <member name="M:TinyCSV.CSVRecordWriter.#ctor(TinyCSV.CSVRecordReader,System.Char)">
+            <summary>
+            Create a CSVRecordWriter by CSVRecordReader.
+            </summary>
+            <param name="csvRecordReader">CSVRecordReader.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+        </member>
+        <member name="T:TinyCSV.CSVTableReader">
+            <summary>
+            Read csv table.
+            </summary>
+        </member>
+        <member name="M:TinyCSV.CSVTableReader.#ctor(System.String,System.Char,System.Boolean)">
+            <summary>
+            Create a CSVTableReader by csv content.
+            </summary>
+            <param name="svContent">CSV content.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+            <param name="supportCellMultiline">If true, support multiline cells but slower, otherwise not support multiline cells but faster.</param>
+        </member>
+        <member name="M:TinyCSV.CSVTableReader.GetDecodeTable(TinyCSV.NewLineStyle)">
+            <summary>
+            Get decode csv string.
+            </summary>
+        </member>
+        <member name="M:TinyCSV.CSVTableReader.GetDecodeTable(System.Char,TinyCSV.NewLineStyle)">
+            <summary>
+            Get decode csv string.
+            </summary>
+        </member>
+        <member name="T:TinyCSV.CSVTableWriter">
+            <summary>
+            Write csv table.
+            </summary>
+        </member>
+        <member name="M:TinyCSV.CSVTableWriter.#ctor(System.Char)">
+            <summary>
+            Create a empty CSVTableWriter.
+            </summary>
+            <param name="cellSeparator">CSV cells separator.</param>
+        </member>
+        <member name="M:TinyCSV.CSVTableWriter.#ctor(System.String,System.Char,System.Boolean)">
+            <summary>
+            Create a CSVTableWriter by csv content.
+            </summary>
+            <param name="svContent">CSV content.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+            <param name="supportCellMultiline">If true, support multiline cells but slower, otherwise not support multiline cells but faster.</param>
+        </member>
+        <member name="M:TinyCSV.CSVTableWriter.#ctor(TinyCSV.CSVTableReader,System.Char)">
+            <summary>
+            Create a CSVTableWriter by CSVTableReader.
+            </summary>
+            <param name="csvTableReader">CSVTableReader.</param>
+            <param name="cellSeparator">CSV cells separator.</param>
+        </member>
+        <member name="M:TinyCSV.CSVTableWriter.GetEncodeTable(TinyCSV.NewLineStyle)">
+            <summary>
+            Get a csv form string.
+            </summary>
+            <param name="newLineStyle">NewLineStyle.</param>
+            <returns>CSV table.</returns>
+        </member>
+        <member name="M:TinyCSV.CSVTableWriter.GetEncodeTable(System.Char,TinyCSV.NewLineStyle)">
+            <summary>
+            Get a csv form string.
+            </summary>
+            <param name="cellSeparator">CSV cells separator.</param>
+            <param name="newLineStyle">NewLineStyle.</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
