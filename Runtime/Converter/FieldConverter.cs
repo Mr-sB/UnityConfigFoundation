@@ -50,6 +50,14 @@ namespace GameUtil.Config
             mConverters = null;
         }
 
+        public static bool CanConvert(Type fieldType)
+        {
+            //初始化
+            if(mConverters == null)
+                Init();
+            return mConverters.ContainsKey(fieldType);
+        }
+        
         public static object Convert(Type fieldType, string fieldContent)
         {
             //初始化

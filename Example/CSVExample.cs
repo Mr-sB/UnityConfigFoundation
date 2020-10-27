@@ -38,6 +38,20 @@ namespace GameUtil.Config.Example
             Debug.LogError("Auto generate data IEnumerable:");
             foreach (var data in CSVConverter.ConvertEnumerator<ExampleTestData>(csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix), csvTableWriter.CellSeparator))
                 Debug.LogError(data);
+
+            Debug.LogError("Auto generate simple data:");
+            foreach (var name in CSVConverter.ConvertNonPublicCtor<string>(
+                new CSVTableWriter()
+                    .AddHeader("Name")
+                    .AddDescription("string")
+                    .AddRecord(new CSVRecordWriter().AddCell("Name1"))
+                    .AddRecord(new CSVRecordWriter().AddCell("Name2"))
+                    .AddRecord(new CSVRecordWriter().AddCell("Name3"))
+                    .AddRecord(new CSVRecordWriter().AddCell("Name4"))
+                    .GetEncodeTable(NewLineStyle.NonUnix)))
+            {
+                Debug.LogError(name);
+            }
         }
     }
 }
