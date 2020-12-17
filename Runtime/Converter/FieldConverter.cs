@@ -25,18 +25,18 @@ namespace GameUtil.Config
                 var convertType = methodInfo.ReturnType;
                 if (convertType == mVoidType)
                 {
-                    Debug.LogError("FieldConverter method's return type can not be void!");
+                    Debug.LogError($"FieldConverter method's return type can not be void! MethodInfo: {methodInfo}");
                     continue;
                 }
                 var parameters = methodInfo.GetParameters();
                 if (parameters.Length != 1 || parameters[0].ParameterType != mStringType)
                 {
-                    Debug.LogError("FieldConverter method's parameters count can be only one string!");
+                    Debug.LogError($"FieldConverter method's parameters count can be only one string! MethodInfo: {methodInfo}");
                     continue;
                 }
                 if (mConverters.ContainsKey(convertType))
                 {
-                    Debug.LogError($"There is already one same return type method added! ReturnType: {convertType}");
+                    Debug.LogError($"There is already one same return type method added! MethodInfo: {methodInfo}");
                     continue;
                 }
                 mConverters.Add(convertType, methodInfo);

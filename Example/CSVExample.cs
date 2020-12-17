@@ -39,19 +39,25 @@ namespace GameUtil.Config.Example
             foreach (var data in CSVConverter.ConvertEnumerator<ExampleTestData>(csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix), csvTableWriter.CellSeparator))
                 Debug.LogError(data);
 
-            Debug.LogError("Auto generate simple data:");
-            foreach (var name in CSVConverter.ConvertNonPublicCtor<string>(
-                new CSVTableWriter()
-                    .AddHeader("Name")
-                    .AddDescription("string")
-                    .AddRecord(new CSVRecordWriter().AddCell("Name1"))
-                    .AddRecord(new CSVRecordWriter().AddCell("Name2"))
-                    .AddRecord(new CSVRecordWriter().AddCell("Name3"))
-                    .AddRecord(new CSVRecordWriter().AddCell("Name4"))
-                    .GetEncodeTable(NewLineStyle.NonUnix)))
-            {
+
+            string newContent = new CSVTableWriter()
+                .AddHeader("Name")
+                .AddHeader("Age")
+                .AddDescription("string")
+                .AddDescription("int")
+                .AddRecord(new CSVRecordWriter().AddCell("Name1").AddCell("10"))
+                .AddRecord(new CSVRecordWriter().AddCell("Name2").AddCell("20"))
+                .AddRecord(new CSVRecordWriter().AddCell("Name3").AddCell("30"))
+                .AddRecord(new CSVRecordWriter().AddCell("Name4").AddCell("40"))
+                .GetEncodeTable(NewLineStyle.NonUnix);
+            
+            Debug.LogError("Auto generate column data by header name:");
+            foreach (var name in CSVConverter.ConvertColumn<string>(newContent, "Name"))
                 Debug.LogError(name);
-            }
+            
+            Debug.LogError("Auto generate column data by header index:");
+            foreach (var age in CSVConverter.ConvertColumn<int>(newContent, 1))
+                Debug.LogError(age);
         }
     }
 }
