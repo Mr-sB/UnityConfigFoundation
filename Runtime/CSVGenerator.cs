@@ -17,11 +17,11 @@ namespace GameUtil.Config
 
         private static readonly string ClassDefineWithNameSpace = "namespace {0}" + Environment.NewLine
                                                                   + "{{" + Environment.NewLine
-                                                                  + "\t[Serializable]" + Environment.NewLine
-                                                                  + "\tpublic class {1}" + Environment.NewLine
-                                                                  + "\t{{" + Environment.NewLine
+                                                                  + "    [Serializable]" + Environment.NewLine
+                                                                  + "    public class {1}" + Environment.NewLine
+                                                                  + "    {{" + Environment.NewLine
                                                                   + "{2}" + Environment.NewLine
-                                                                  + "\t}}" + Environment.NewLine
+                                                                  + "    }}" + Environment.NewLine
                                                                   + "}}" + Environment.NewLine;
 
         private static readonly string ClassDefineWithoutNameSpace = "[Serializable]" + Environment.NewLine
@@ -33,7 +33,7 @@ namespace GameUtil.Config
         public static string CSV2Class(string csvContent, string namespaceName, string className, char cellSeparator = CSVDataHelper.CommaCharacter)
         {
             bool hasNameSpace = !string.IsNullOrWhiteSpace(namespaceName);
-            string space = hasNameSpace ? "\t\t" : "\t";
+            string space = hasNameSpace ? "        " : "    ";
             var table = new CSVTableReader(csvContent, cellSeparator);
             StringBuilder sb = new StringBuilder();
             for (int i = 0, column = table.Column; i < column; i++)
