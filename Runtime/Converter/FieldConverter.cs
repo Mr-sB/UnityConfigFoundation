@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -13,7 +14,8 @@ namespace GameUtil.Config
         private static Dictionary<Type, MethodInfo> mConverters;
         private static readonly Type mVoidType = typeof(void);
         private static readonly Type mStringType = typeof(string);
-        
+        private static readonly string mValueTupleNameStart = nameof(ValueTuple) + '`';
+
         private static void Init()
         {
             if(mConverters != null) return;
@@ -55,14 +57,31 @@ namespace GameUtil.Config
             //初始化
             if(mConverters == null)
                 Init();
-            return mConverters.ContainsKey(fieldType);
+            //Custom Enum
+            if (mConverters.ContainsKey(fieldType) || fieldType.IsEnum)
+                return true;
+            //One dimensional array
+            if (fieldType.IsArray && fieldType.GetArrayRank() == 1 && CanConvert(fieldType.GetElementType()))
+                return true;
+            //ValueTuple
+            if (fieldType.Name.StartsWith(mValueTupleNameStart) && !fieldType.IsArray)
+            {
+                foreach (var genericArgument in fieldType.GetGenericArguments())
+                    if (!CanConvert(genericArgument)) return false;
+                return true;
+            }
+            return false;
         }
         
         public static object Convert(Type fieldType, string fieldContent)
         {
-            //初始化
-            if(mConverters == null)
-                Init();
+            //Check
+            if (!CanConvert(fieldType))
+            {
+                Debug.LogError(string.Format("Can not convert {0} type data!", fieldType));
+                return null;
+            }
+            //Custom
             if (mConverters.TryGetValue(fieldType, out var converter))
             {
                 try
@@ -75,8 +94,16 @@ namespace GameUtil.Config
                     return null;
                 }
             }
+            //Enum
             if (fieldType.IsEnum)
                 return fieldContent.EnumConverter(fieldType);
+            //One dimensional array
+            if (fieldType.IsArray && fieldType.GetArrayRank() == 1)
+                return fieldContent.ArrayConverter(fieldType.GetElementType());
+            //ValueTuple                
+            if (fieldType.Name.StartsWith(mValueTupleNameStart) && !fieldType.IsArray)
+                return fieldContent.ValueTupleConverter(fieldType);
+
             Debug.LogError(string.Format("Can not convert {0} type data!", fieldType));
             return null;
         }
@@ -86,7 +113,6 @@ namespace GameUtil.Config
             return (T)Convert(typeof(T), fieldContent);
         }
 
-        
         #region SingleDataConverters
         public static object EnumConverter(this string fieldContent, Type fieldType)
         {
@@ -95,9 +121,40 @@ namespace GameUtil.Config
             {
                 return Enum.Parse(fieldType, fieldContent);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Debug.LogError(e);
                 return 0;
+            }
+        }
+        
+        public static object ValueTupleConverter(this string fieldContent, Type ValueTupleType)
+        {
+            //Get GenericArguments
+            Type[] genericArguments = ValueTupleType.GetGenericArguments();
+            int argsLength = genericArguments.Length;
+            //Get Create method
+            var createMethodInfo = typeof(ValueTuple).GetMethods().First(info => info.Name == nameof(ValueTuple.Create) && info.GetParameters().Length == argsLength)?.MakeGenericMethod(genericArguments);
+            if (createMethodInfo == null)
+            {
+                Debug.LogError($"Do not find ValueTuple.Create method with {argsLength} arguments.");
+                return Activator.CreateInstance(ValueTupleType);
+            }
+
+            //Create arguments
+            string[] strs = FieldSplit(fieldContent);
+            object[] args = new object[argsLength];
+            for (int i = 0, len = Mathf.Min(argsLength, strs.Length); i < len; i++)
+                args[i] = Convert(genericArguments[i], strs[i]);
+            //Invoke Create method
+            try
+            {
+                return createMethodInfo.Invoke(null, args);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                return Activator.CreateInstance(ValueTupleType);
             }
         }
         
@@ -248,6 +305,28 @@ namespace GameUtil.Config
 
         
         #region ArrayDataConverters
+        public static Array ArrayConverter(this string fieldContent, Type elementType)
+        {
+            var strs = ArraySplit(fieldContent);
+            if (strs == null || strs.Length <= 0) return null;
+            int len = strs.Length;
+            Array dataArray = Array.CreateInstance(elementType, len);
+            for (int i = 0; i < len; i++)
+                dataArray.SetValue(Convert(elementType, strs[i]), i);
+            return dataArray;
+        }
+        
+        public static T[] ArrayConverter<T>(this string fieldContent)
+        {
+            var strs = ArraySplit(fieldContent);
+            if (strs == null || strs.Length <= 0) return null;
+            int len = strs.Length;
+            T[] dataArray = new T[len];
+            for (int i = 0; i < len; i++)
+                dataArray[i] = (T)Convert(typeof(T), strs[i]);
+            return dataArray;
+        }
+        
         [FieldConverter]
         public static char[] CharArrayConverter(this string fieldContent)
         {

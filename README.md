@@ -5,6 +5,10 @@ Automatically generate data objects according to CSV configuration table.
 * `TextAssetLoader` can help you easily load `TextAsset` from `StreamAssets` or `Resources` or `PersistentDataPath`.
 * `CSVConverter` can convert CSV text to some frequently-used data objects.
 * `CVSGenerator` can convert the definition of CSV and Class.
+* Support convert Types:
+|Primitive|1D Array|ValueTuple|Frequently-used UnityEngine Type|
+| :-----: |   :-:  | :------: | :----------------------------: |
+|    √    |    √   |     √    |                √               |
 
 ## Extend
 If you want to add some data type converter, create a class and use `partial` keyword to be part of `FieldConverter` class.
@@ -24,5 +28,5 @@ namespace GameUtil.Config
 }
 ```
 
-## Dependencies
+## Plugin
 * [TinyCSV](https://github.com/Mr-sB/TinyCSV)(Open source)

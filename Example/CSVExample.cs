@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace GameUtil.Config.Example
 {
+    [ExecuteAlways]
     public class CSVExample : MonoBehaviour
     {
         private void OnEnable()
@@ -20,14 +21,18 @@ namespace GameUtil.Config.Example
                 .AddCell("2")
                 .AddCell("normal string")
                 .AddCell("\"string with double quote")
-                .AddCell("1;2;3|4;5;6"));
+                .AddCell("1;2;3|4;5;6")
+                .AddCell("#cccccc;string content")
+                .AddCell("#cccccc;string content|#ffffff;second string"));
             csvTableWriter.AddRecord(new CSVRecordWriter()
                 .AddCell("3")
                 .AddCell("#dddddd")
                 .AddCell("4")
                 .AddCell("string with, comma")
                 .AddCell("\"string with\", comma and \"double quote")
-                .AddCell("7;8;9|10;11;12|7;7;7"));
+                .AddCell("7;8;9|10;11;12|7;7;7")
+                .AddCell("#dddddd;string content2")
+                .AddCell("#dddddd;string content2|#eeeeee;second string2"));
             Debug.LogError("csv add data:\n" + csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix));
             
             var dataArray = CSVConverter.Convert<ExampleTestData>(csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix), csvTableWriter.CellSeparator);
