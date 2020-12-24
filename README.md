@@ -6,6 +6,7 @@ Automatically generate data objects according to CSV configuration table.
 * `CSVConverter` can convert CSV text to some frequently-used data objects.
 * `CVSGenerator` can convert the definition of CSV and Class.
 * Support convert Types:
+
 |Primitive|1D Array|ValueTuple|Frequently-used UnityEngine Type|
 | :-----: |   :-:  | :------: | :----------------------------: |
 |    √    |    √   |     √    |                √               |
