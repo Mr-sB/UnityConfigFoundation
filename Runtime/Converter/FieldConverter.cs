@@ -128,17 +128,17 @@ namespace GameUtil.Config
             }
         }
         
-        public static object ValueTupleConverter(this string fieldContent, Type ValueTupleType)
+        public static object ValueTupleConverter(this string fieldContent, Type valueTupleType)
         {
             //Get GenericArguments
-            Type[] genericArguments = ValueTupleType.GetGenericArguments();
+            Type[] genericArguments = valueTupleType.GetGenericArguments();
             int argsLength = genericArguments.Length;
             //Get Create method
             var createMethodInfo = typeof(ValueTuple).GetMethods().First(info => info.Name == nameof(ValueTuple.Create) && info.GetParameters().Length == argsLength)?.MakeGenericMethod(genericArguments);
             if (createMethodInfo == null)
             {
                 Debug.LogError($"Do not find ValueTuple.Create method with {argsLength} arguments.");
-                return Activator.CreateInstance(ValueTupleType);
+                return Activator.CreateInstance(valueTupleType);
             }
 
             //Create arguments
@@ -154,7 +154,7 @@ namespace GameUtil.Config
             catch (Exception e)
             {
                 Debug.LogError(e);
-                return Activator.CreateInstance(ValueTupleType);
+                return Activator.CreateInstance(valueTupleType);
             }
         }
         
