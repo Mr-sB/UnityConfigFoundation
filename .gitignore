@@ -40,6 +40,9 @@ ExportedObj/
 *.opendb
 *.VC.db
 
+README.md.meta
+LICENSE.meta
+
 # Unity3D generated file on crash reports
 sysinfo.txt
 
