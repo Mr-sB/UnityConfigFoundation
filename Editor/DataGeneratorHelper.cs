@@ -9,16 +9,19 @@ namespace GameUtil.Config.Editor
 {
     public static class DataGeneratorHelper
     {
-        private static readonly string ConfigClassDefineWithNameSpace = "namespace {0}" + Environment.NewLine
-                                                                                        + "{{" + Environment.NewLine
-                                                                                        + "    public class {1} : DataConfigBase<{2}>" + Environment.NewLine
-                                                                                        + "    {{" + Environment.NewLine
-                                                                                        + "    }}" + Environment.NewLine
-                                                                                        + "}}" + Environment.NewLine;
+        private static readonly string ConfigClassDefineWithNameSpace = "using GameUtil.Config;" + Environment.NewLine + Environment.NewLine
+                                                                        + "namespace {0}" + Environment.NewLine
+                                                                        + "{{" + Environment.NewLine
+                                                                        + "    public class {1} : DataConfigBase<{2}>" +
+                                                                        Environment.NewLine
+                                                                        + "    {{" + Environment.NewLine
+                                                                        + "    }}" + Environment.NewLine
+                                                                        + "}}" + Environment.NewLine;
 
-        private static readonly string ConfigClassDefineWithoutNameSpace = "public class {0} : DataConfigBase<{1}>" + Environment.NewLine
-                                                                                                                    + "{{" + Environment.NewLine
-                                                                                                                    + "}}" + Environment.NewLine;
+        private static readonly string ConfigClassDefineWithoutNameSpace = "using GameUtil.Config;" + Environment.NewLine + Environment.NewLine
+                                                                           + "public class {0} : DataConfigBase<{1}>" + Environment.NewLine
+                                                                           + "{{" + Environment.NewLine
+                                                                           + "}}" + Environment.NewLine;
 
         public static void CreateClass(string csvPath, string modelPath, string namespaceName, string modelName, string configPath, string configName)
         {
