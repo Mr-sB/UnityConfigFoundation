@@ -128,17 +128,17 @@ namespace GameUtil.Config
             }
         }
         
-        public static object ValueTupleConverter(this string fieldContent, Type valueTupleType)
+        public static object ValueTupleConverter(this string fieldContent, Type fieldType)
         {
             //Get GenericArguments
-            Type[] genericArguments = valueTupleType.GetGenericArguments();
+            Type[] genericArguments = fieldType.GetGenericArguments();
             int argsLength = genericArguments.Length;
             //Get Create method
             var createMethodInfo = typeof(ValueTuple).GetMethods().First(info => info.Name == nameof(ValueTuple.Create) && info.GetParameters().Length == argsLength)?.MakeGenericMethod(genericArguments);
             if (createMethodInfo == null)
             {
-                Debug.LogError($"Do not find ValueTuple.Create method with {argsLength} arguments.");
-                return Activator.CreateInstance(valueTupleType);
+                Debug.LogError($"Can not find ValueTuple.Create method with {argsLength} arguments.");
+                return Activator.CreateInstance(fieldType);
             }
 
             //Create arguments
@@ -154,8 +154,16 @@ namespace GameUtil.Config
             catch (Exception e)
             {
                 Debug.LogError(e);
-                return Activator.CreateInstance(valueTupleType);
+                return Activator.CreateInstance(fieldType);
             }
+        }
+        
+        public static T ValueTupleConverter<T>(this string fieldContent) where T : struct
+        {
+            var fieldType = typeof(T);
+            if (fieldType.Name.StartsWith(mValueTupleNameStart) && !fieldType.IsArray)
+                return (T) ValueTupleConverter(fieldContent, typeof(T));
+            return default;
         }
         
         [FieldConverter]
@@ -427,6 +435,17 @@ namespace GameUtil.Config
         public static Color[] ColorArrayConverter(this string fieldContent)
         {
             return ArrayConverter(fieldContent, ColorConverter);
+        }
+        
+        public static T[] ValueTupleArrayConverter<T>(this string fieldContent) where T : struct
+        {
+            var strs = ArraySplit(fieldContent);
+            if (strs == null || strs.Length <= 0) return null;
+            int len = strs.Length;
+            T[] dataArray = new T[len];
+            for (int i = 0; i < len; i++)
+                dataArray[i] = ValueTupleConverter<T>(strs[i]);
+            return dataArray;
         }
         #endregion
 
