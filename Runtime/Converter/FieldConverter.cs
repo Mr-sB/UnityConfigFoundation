@@ -33,12 +33,12 @@ namespace GameUtil.Config
                 var parameters = methodInfo.GetParameters();
                 if (parameters.Length != 1 || parameters[0].ParameterType != mStringType)
                 {
-                    Debug.LogError($"FieldConverter method's parameters count can be only one string! MethodInfo: {methodInfo}");
+                    Debug.LogError($"FieldConverter method's parameters can be only one string! MethodInfo: {methodInfo}");
                     continue;
                 }
                 if (mConverters.ContainsKey(convertType))
                 {
-                    Debug.LogError($"There is already one same return type method added! MethodInfo: {methodInfo}");
+                    Debug.LogError($"The same return type method has been added! MethodInfo: {methodInfo}");
                     continue;
                 }
                 mConverters.Add(convertType, methodInfo);
@@ -78,7 +78,7 @@ namespace GameUtil.Config
             //Check
             if (!CanConvert(fieldType))
             {
-                Debug.LogError(string.Format("Can not convert {0} type data!", fieldType));
+                Debug.LogError($"Can not convert {fieldType} type data!");
                 return null;
             }
             //Custom
@@ -104,7 +104,7 @@ namespace GameUtil.Config
             if (fieldType.Name.StartsWith(mValueTupleNameStart) && !fieldType.IsArray)
                 return fieldContent.ValueTupleConverter(fieldType);
 
-            Debug.LogError(string.Format("Can not convert {0} type data!", fieldType));
+            Debug.LogError($"Can not convert {fieldType} type data!");
             return null;
         }
         
