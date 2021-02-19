@@ -1,4 +1,5 @@
-﻿using TinyCSV;
+﻿using System;
+using TinyCSV;
 using UnityEngine;
 
 namespace GameUtil.Config.Example
@@ -8,6 +9,19 @@ namespace GameUtil.Config.Example
     {
         private void OnEnable()
         {
+            //Using ValueTuple as the data type.
+            Debug.LogError("Auto generate data Array:");
+            foreach (var data in CSVConverter.Convert<ValueTuple<float, string>>(
+                new CSVTableWriter()
+                    .AddHeader("Item1")
+                    .AddHeader("Item2")
+                    .AddDescription("float")
+                    .AddDescription("string")
+                    .AddRecord(new CSVRecordWriter().AddCell("1.25").AddCell("first"))
+                    .AddRecord(new CSVRecordWriter().AddCell("2.5").AddCell("second"))
+                    .GetEncodeTable()))
+                Debug.LogError(data);
+            
             //Custom cell separator.
             CSVTableWriter csvTableWriter = CSVGenerator.Class2CSVTable<ExampleTestData>(';');
             Debug.LogError("Auto generate csv:\n" + csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix));

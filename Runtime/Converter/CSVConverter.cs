@@ -112,19 +112,39 @@ namespace GameUtil.Config
         {
             if(records == null || records.Length == 0 || fieldInfos == null || fieldInfos.Length == 0) yield break;
             int fieldLen = fieldInfos.Length;
-            foreach (var record in records)
+            if (typeof(T).IsClass)
             {
-                var cellArray = record.CellArray;
-                //生成单个数据对象
-                T data = new T();
-                for (int j = 0, len = Mathf.Min(fieldLen, cellArray.Length); j < len; j++)
+                foreach (var record in records)
                 {
-                    var fieldInfo = fieldInfos[j];
-                    if(fieldInfo == null) continue;
-                    //根据fieldInfo.FieldType确定数据类型，根据
-                    fieldInfo.SetValue(data, FieldConverter.Convert(fieldInfo.FieldType, cellArray[j]));
+                    var cellArray = record.CellArray;
+                    //生成单个数据对象
+                    T data = new T();
+                    for (int j = 0, len = Mathf.Min(fieldLen, cellArray.Length); j < len; j++)
+                    {
+                        var fieldInfo = fieldInfos[j];
+                        if(fieldInfo == null) continue;
+                        //根据fieldInfo.FieldType确定数据类型
+                        fieldInfo.SetValue(data, FieldConverter.Convert(fieldInfo.FieldType, cellArray[j]));
+                    }
+                    yield return data;
                 }
-                yield return data;
+            }
+            else
+            {
+                foreach (var record in records)
+                {
+                    var cellArray = record.CellArray;
+                    //生成单个数据对象 使用object装箱struct，否则SetValue更改的是data拷贝对象的值
+                    object data = new T();
+                    for (int j = 0, len = Mathf.Min(fieldLen, cellArray.Length); j < len; j++)
+                    {
+                        var fieldInfo = fieldInfos[j];
+                        if(fieldInfo == null) continue;
+                        //根据fieldInfo.FieldType确定数据类型
+                        fieldInfo.SetValue(data, FieldConverter.Convert(fieldInfo.FieldType, cellArray[j]));
+                    }
+                    yield return (T)data;
+                }
             }
         }
 
