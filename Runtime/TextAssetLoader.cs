@@ -2,7 +2,6 @@
 using UnityEditor;
 #endif
 using System;
-using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -12,29 +11,29 @@ namespace GameUtil.Config
     /// <summary>
     /// 加载文本资源
     /// </summary>
-    public class TextAssetLoader : MonoBehaviour
+    public static class TextAssetLoader// : MonoBehaviour
     {
-        private static TextAssetLoader instance;
-
-        private static TextAssetLoader Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    //Find
-                    instance = FindObjectOfType<TextAssetLoader>();
-                    //Create
-                    if (instance == null)
-                    {
-                        var go = new GameObject(nameof(TextAssetLoader));
-                        instance = go.AddComponent<TextAssetLoader>();
-                        DontDestroyOnLoad(go);
-                    }
-                }
-                return instance;
-            }
-        }
+        // private static TextAssetLoader instance;
+        //
+        // private static TextAssetLoader Instance
+        // {
+        //     get
+        //     {
+        //         if (instance == null)
+        //         {
+        //             //Find
+        //             instance = FindObjectOfType<TextAssetLoader>();
+        //             //Create
+        //             if (instance == null)
+        //             {
+        //                 var go = new GameObject(nameof(TextAssetLoader));
+        //                 instance = go.AddComponent<TextAssetLoader>();
+        //                 DontDestroyOnLoad(go);
+        //             }
+        //         }
+        //         return instance;
+        //     }
+        // }
         
 #if UNITY_EDITOR
         public static string LoadInEditor(string absolutePath)
@@ -43,15 +42,9 @@ namespace GameUtil.Config
         }
 #endif
 
-        public static void LoadFromStreamingAssets(string relativePath, Action<string> onLoaded)
+        public static void LoadFromStreamingAssets(string relativePath, Action<string> loaded)
         {
-            if (onLoaded == null) return;
-            Instance.StartCoroutine(LoadFromStreamingAssetsInternal(relativePath, onLoaded));
-        }
-        
-        private static IEnumerator LoadFromStreamingAssetsInternal(string relativePath, Action<string> onLoaded)
-        {
-            if (onLoaded == null) yield break;
+            if (loaded == null) return;
             
             /*
             Android平台：
@@ -70,22 +63,46 @@ namespace GameUtil.Config
             path = "file:///" + path;
 #endif
             
-            UnityWebRequest request = UnityWebRequest.Get(path);
-            request.SendWebRequest();
-            yield return request;
-            if (request.isNetworkError)
+            UnityWebRequest.Get(path).SendWebRequest().completed += asyncOperation =>
             {
-                Debug.LogError(request.error);
-                onLoaded(string.Empty);
-                yield break;
-            }
-            if (!request.isDone)
+                if (!TryGetUnityWebRequestFromAsyncOperation(asyncOperation, out var webRequest))
+                {
+                    loaded(string.Empty);
+                    return;
+                }
+                if (webRequest.isNetworkError || webRequest.isHttpError)
+                {
+                    Debug.LogError(webRequest.error);
+                    loaded(string.Empty);
+                    return;
+                }
+                if (!webRequest.isDone)
+                {
+                    Debug.LogError("WebRequest is not done yet!");
+                    loaded(string.Empty);
+                    return;
+                }
+                loaded(webRequest.downloadHandler != null ? webRequest.downloadHandler.text : string.Empty);
+            };
+        }
+        
+        private static bool TryGetUnityWebRequestFromAsyncOperation(AsyncOperation asyncOperation, out UnityWebRequest webRequest)
+        {
+            webRequest = null;
+            if (!(asyncOperation is UnityWebRequestAsyncOperation webRequestAsyncOperation))
             {
-                Debug.LogError("File:" + path + " does not exist!");
-                onLoaded(string.Empty);
-                yield break;
+                Debug.LogError("AsyncOperation is not UnityWebRequestAsyncOperation!");
+                return false;
             }
-            onLoaded(request.downloadHandler != null ? request.downloadHandler.text : string.Empty);
+
+            webRequest = webRequestAsyncOperation.webRequest;
+            if (webRequest == null)
+            {
+                Debug.LogError("UnityWebRequest is null!");
+                return false;
+            }
+
+            return true;
         }
         
         public static string LoadFromPersistentData(string relativePath)
