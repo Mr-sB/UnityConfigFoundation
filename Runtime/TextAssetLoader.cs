@@ -45,22 +45,13 @@ namespace GameUtil.Config
         public static void LoadFromStreamingAssets(string relativePath, Action<string> loaded)
         {
             if (loaded == null) return;
-            
             /*
-            Android平台：
-            Application.streamingAssetsPath + 你的资源
-            IOS平台：
-            "file://” + Application.streamingAssetsPath + 你的资源
-            其余平台以及下：
-            "file:///" + Application.streamingAssetsPath + 你的资源
+            Android: Application.streamingAssetsPath + /asset
+            Others(Include IOS): "file://" + Application.streamingAssetsPath + /asset
             */
             string path = Path.Combine(Application.streamingAssetsPath, relativePath);
-#if UNITY_EDITOR
-            path = "file:///" + path;
-#elif UNITY_IOS
+#if !UNITY_ANDROID || UNITY_EDITOR
             path = "file://" + path;
-#elif !UNITY_ANDROID
-            path = "file:///" + path;
 #endif
             
             UnityWebRequest.Get(path).SendWebRequest().completed += asyncOperation =>
@@ -70,19 +61,16 @@ namespace GameUtil.Config
                     loaded(string.Empty);
                     return;
                 }
+
+                string text = string.Empty;
                 if (webRequest.isNetworkError || webRequest.isHttpError)
-                {
                     Debug.LogError(webRequest.error);
-                    loaded(string.Empty);
-                    return;
-                }
-                if (!webRequest.isDone)
-                {
+                else if (!webRequest.isDone)
                     Debug.LogError("WebRequest is not done yet!");
-                    loaded(string.Empty);
-                    return;
-                }
-                loaded(webRequest.downloadHandler != null ? webRequest.downloadHandler.text : string.Empty);
+                else
+                    text = webRequest.downloadHandler != null ? webRequest.downloadHandler.text : string.Empty;
+                webRequest.Dispose();
+                loaded(text);
             };
         }
         
@@ -101,7 +89,6 @@ namespace GameUtil.Config
                 Debug.LogError("UnityWebRequest is null!");
                 return false;
             }
-
             return true;
         }
         
@@ -113,20 +100,11 @@ namespace GameUtil.Config
                 Debug.LogError("File:" + path + " does not exist!");
                 return string.Empty;
             }
-            using (StreamReader reader = new StreamReader(path))
-                return reader.ReadToEnd();
+            return File.ReadAllText(path);
         }
         
-        /// <summary>
-        /// Resources下的二进制文件必须以.bytes结尾。例如Test.xxx.bytes
-        /// Please notice that files with the .txt and .bytes extension will be treated as text and binary files, respectively.
-        /// Do not attempt to store a binary file using the .txt extension, as this will create unexpected behaviour when attempting to read data from it.
-        /// </summary>
         public static string LoadFromResources(string relativePath)
         {
-            //Resources下的文本文件不能加.txt后缀
-            if (relativePath.EndsWith(".txt"))
-                relativePath = relativePath.Substring(0, relativePath.Length - 4);
             var textAsset = Resources.Load<TextAsset>(relativePath);
             if (textAsset == null)
             {
