@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TinyCSV;
 using UnityEngine;
 
@@ -9,8 +10,19 @@ namespace GameUtil.Config.Example
     {
         private void OnEnable()
         {
+            //Support List<> data type.
+            Debug.LogError("Auto generate data list:");
+            foreach (var data in CSVConverter.ConvertColumn<List<float>>(
+                new CSVTableWriter()
+                    .AddHeader("Item1")
+                    .AddDescription("List<float>")
+                    .AddRecord(new CSVRecordWriter().AddCell("1.25|3.33|2.5|4"))
+                    .AddRecord(new CSVRecordWriter().AddCell("2.5|4|5.1"))
+                    .GetEncodeTable()))
+                Debug.LogError(string.Join("|", data));
+            
             //Using ValueTuple as the data type.
-            Debug.LogError("Auto generate data Array:");
+            Debug.LogError("Auto generate data list:");
             foreach (var data in CSVConverter.Convert<ValueTuple<float, string>>(
                 new CSVTableWriter()
                     .AddHeader("Item1")
@@ -49,15 +61,14 @@ namespace GameUtil.Config.Example
                 .AddCell("#dddddd;string content2|#eeeeee;second string2"));
             Debug.LogError("csv add data:\n" + csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix));
             
-            var dataArray = CSVConverter.Convert<ExampleTestData>(csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix), csvTableWriter.CellSeparator);
-            Debug.LogError("Auto generate data Array:");
-            foreach (var data in dataArray)
+            var dataList = CSVConverter.Convert<ExampleTestData>(csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix), csvTableWriter.CellSeparator);
+            Debug.LogError("Auto generate data list:");
+            foreach (var data in dataList)
                 Debug.LogError(data);
 
             Debug.LogError("Auto generate data IEnumerable:");
             foreach (var data in CSVConverter.ConvertEnumerator<ExampleTestData>(csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix), csvTableWriter.CellSeparator))
                 Debug.LogError(data);
-
 
             string newContent = new CSVTableWriter()
                 .AddHeader("Name")

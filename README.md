@@ -7,9 +7,9 @@ Automatically generate data objects according to CSV configuration table.
 * `CVSGenerator` can convert the definition of CSV and Class.
 * Support convert Types:
 
-|Primitive|1D Array|ValueTuple|Frequently-used UnityEngine Type|
-| :-----: |   :-:  | :------: | :----------------------------: |
-|    √    |    √   |     √    |                √               |
+| Primitive | 1D Array | List | ValueTuple | Frequently-used UnityEngine Type |
+| :-------: | :------: | :--: | :--------: | :------------------------------: |
+|     √     |     √    |   √  |      √     |                 √                |
 
 ## Extend
 If you want to add some data type converter, create a class and use `partial` keyword to be part of `FieldConverter` class.

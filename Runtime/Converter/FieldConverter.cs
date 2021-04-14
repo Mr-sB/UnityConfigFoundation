@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -14,6 +15,7 @@ namespace GameUtil.Config
         private static Dictionary<Type, MethodInfo> mConverters;
         private static readonly Type mVoidType = typeof(void);
         private static readonly Type mStringType = typeof(string);
+        private static readonly Type mListGenericType = typeof(List<>);
         private static readonly string mValueTupleNameStart = nameof(ValueTuple) + '`';
 
         private static void Init()
@@ -63,6 +65,9 @@ namespace GameUtil.Config
             //One dimensional array
             if (fieldType.IsArray && fieldType.GetArrayRank() == 1 && CanConvert(fieldType.GetElementType()))
                 return true;
+            //List
+            if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == mListGenericType && CanConvert(fieldType.GetGenericArguments()[0]))
+                return true;
             //ValueTuple
             if (fieldType.Name.StartsWith(mValueTupleNameStart) && !fieldType.IsArray)
             {
@@ -100,6 +105,9 @@ namespace GameUtil.Config
             //One dimensional array
             if (fieldType.IsArray && fieldType.GetArrayRank() == 1)
                 return fieldContent.ArrayConverter(fieldType.GetElementType());
+            //List
+            if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == mListGenericType)
+                return fieldContent.ListConverter(fieldType.GetGenericArguments()[0]);
             //ValueTuple                
             if (fieldType.Name.StartsWith(mValueTupleNameStart) && !fieldType.IsArray)
                 return fieldContent.ValueTupleConverter(fieldType);
@@ -158,7 +166,7 @@ namespace GameUtil.Config
             }
         }
         
-        public static T ValueTupleConverter<T>(this string fieldContent) where T : struct
+        public static T ValueTupleConverter<T>(this string fieldContent)
         {
             var fieldType = typeof(T);
             if (fieldType.Name.StartsWith(mValueTupleNameStart) && !fieldType.IsArray)
@@ -335,6 +343,20 @@ namespace GameUtil.Config
             return dataArray;
         }
         
+        /// <summary>
+        /// 数组转换
+        /// </summary>
+        private static T[] ArrayConverter<T>(string fieldContent, Func<string, T> converter)
+        {
+            var strs = ArraySplit(fieldContent);
+            if (strs == null || strs.Length <= 0) return null;
+            int len = strs.Length;
+            T[] dataArray = new T[len];
+            for (int i = 0; i < len; i++)
+                dataArray[i] = converter(strs[i]);
+            return dataArray;
+        }
+        
         [FieldConverter]
         public static char[] CharArrayConverter(this string fieldContent)
         {
@@ -437,7 +459,7 @@ namespace GameUtil.Config
             return ArrayConverter(fieldContent, ColorConverter);
         }
         
-        public static T[] ValueTupleArrayConverter<T>(this string fieldContent) where T : struct
+        public static T[] ValueTupleArrayConverter<T>(this string fieldContent)
         {
             var strs = ArraySplit(fieldContent);
             if (strs == null || strs.Length <= 0) return null;
@@ -448,20 +470,157 @@ namespace GameUtil.Config
             return dataArray;
         }
         #endregion
-
-        /// <summary>
-        /// 数组转换
-        /// </summary>
-        private static T[] ArrayConverter<T>(string fieldContent, Func<string, T> converter)
+        
+        #region ListDataConverters
+        public static IList ListConverter(this string fieldContent, Type elementType)
         {
-            var strs = ArraySplit(fieldContent);
+            var strs = ListSplit(fieldContent);
             if (strs == null || strs.Length <= 0) return null;
             int len = strs.Length;
-            T[] dataArray = new T[len];
+            IList dataList = Activator.CreateInstance(mListGenericType.MakeGenericType(elementType)) as IList;
             for (int i = 0; i < len; i++)
-                dataArray[i] = converter(strs[i]);
-            return dataArray;
+                dataList.Add(Convert(elementType, strs[i]));
+            return dataList;
         }
+        
+        public static List<T> ListConverter<T>(this string fieldContent)
+        {
+            var strs = ListSplit(fieldContent);
+            if (strs == null || strs.Length <= 0) return null;
+            int len = strs.Length;
+            List<T> dataList = new List<T>(len);
+            for (int i = 0; i < len; i++)
+                dataList.Add((T)Convert(typeof(T), strs[i]));
+            return dataList;
+        }
+        
+        /// <summary>
+        /// List转换
+        /// </summary>
+        private static List<T> ListConverter<T>(string fieldContent, Func<string, T> converter)
+        {
+            var strs = ListSplit(fieldContent);
+            if (strs == null || strs.Length <= 0) return null;
+            int len = strs.Length;
+            List<T> dataList = new List<T>(len);
+            for (int i = 0; i < len; i++)
+                dataList.Add(converter(strs[i]));
+            return dataList;
+        }
+        
+        [FieldConverter]
+        public static List<char> CharListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, CharConverter);
+        }
+        
+        [FieldConverter]
+        public static List<string> StringListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, StringConverter);
+        }
+        
+        [FieldConverter]
+        public static List<bool> BoolListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, BoolConverter);
+        }
+        
+        [FieldConverter]
+        public static List<byte> ByteListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, ByteConverter);
+        }
+        
+        [FieldConverter]
+        public static List<short> ShortListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, ShortConverter);
+        }
+        
+        [FieldConverter]
+        public static List<int> IntListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, IntConverter);
+        }
+        
+        [FieldConverter]
+        public static List<uint> UIntListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, UIntConverter);
+        }
+        
+        [FieldConverter]
+        public static List<long> LongListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, LongConverter);
+        }
+        
+        [FieldConverter]
+        public static List<float> FloatListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, FloatConverter);
+        }
+        
+        [FieldConverter]
+        public static List<double> DoubleListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, DoubleConverter);
+        }
+        
+        [FieldConverter]
+        public static List<Vector2> Vector2ListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, Vector2Converter);
+        }
+
+        [FieldConverter]
+        public static List<Vector3> Vector3ListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, Vector3Converter);
+        }
+
+        [FieldConverter]
+        public static List<Vector4> Vector4ListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, Vector4Converter);
+        }
+        
+        [FieldConverter]
+        public static List<Vector2Int> Vector2IntListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, Vector2IntConverter);
+        }
+
+        [FieldConverter]
+        public static List<Vector3Int> Vector3IntListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, Vector3IntConverter);
+        }
+
+        [FieldConverter]
+        public static List<Quaternion> QuaternionListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, QuaternionConverter);
+        }
+
+        [FieldConverter]
+        public static List<Color> ColorListConverter(this string fieldContent)
+        {
+            return ListConverter(fieldContent, ColorConverter);
+        }
+        
+        public static List<T> ValueTupleListConverter<T>(this string fieldContent)
+        {
+            var strs = ListSplit(fieldContent);
+            if (strs == null || strs.Length <= 0) return null;
+            int len = strs.Length;
+            List<T> dataList = new List<T>(len);
+            for (int i = 0; i < len; i++)
+                dataList.Add(ValueTupleConverter<T>(strs[i]));
+            return dataList;
+        }
+        #endregion
         
         /// <summary>
         /// 字段分割用;
@@ -475,6 +634,14 @@ namespace GameUtil.Config
         /// 数组分割用|
         /// </summary>
         private static string[] ArraySplit(string fieldContent)
+        {
+            return string.IsNullOrEmpty(fieldContent) ? new string[0] : fieldContent.Split('|');
+        }
+        
+        /// <summary>
+        /// List分割用|
+        /// </summary>
+        private static string[] ListSplit(string fieldContent)
         {
             return string.IsNullOrEmpty(fieldContent) ? new string[0] : fieldContent.Split('|');
         }
