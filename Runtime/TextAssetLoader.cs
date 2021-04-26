@@ -63,12 +63,29 @@ namespace GameUtil.Config
                 }
 
                 string text = string.Empty;
+#if UNITY_2020_1_OR_NEWER
+                switch (webRequest.result)
+                {
+                    case UnityWebRequest.Result.InProgress:
+                        Debug.LogError("WebRequest is not done yet!");
+                        break;
+                    case UnityWebRequest.Result.Success:
+                        text = webRequest.downloadHandler != null ? webRequest.downloadHandler.text : string.Empty;
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                    case UnityWebRequest.Result.ProtocolError:
+                    case UnityWebRequest.Result.DataProcessingError:
+                        Debug.LogError(webRequest.error);
+                        break;
+                }
+#else
                 if (webRequest.isNetworkError || webRequest.isHttpError)
                     Debug.LogError(webRequest.error);
                 else if (!webRequest.isDone)
                     Debug.LogError("WebRequest is not done yet!");
                 else
                     text = webRequest.downloadHandler != null ? webRequest.downloadHandler.text : string.Empty;
+#endif
                 webRequest.Dispose();
                 loaded(text);
             };
