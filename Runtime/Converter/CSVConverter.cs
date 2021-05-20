@@ -176,7 +176,11 @@ namespace GameUtil.Config
             if (!TryInitConvertColumnByIndex(dataType, csvContent, headerIndex, cellSeparator, supportCellMultiline, out var csvTableReader)) return null;
             var dataList = Activator.CreateInstance(typeof(List<>).MakeGenericType(dataType), csvTableReader.RecordRow) as IList;
             foreach (var record in csvTableReader.Records)
-                dataList.Add(headerIndex < record.CellArray.Length ? FieldConverter.Convert(dataType, record.CellArray[headerIndex]) : default);
+                dataList.Add(headerIndex < record.CellArray.Length
+                    ? FieldConverter.Convert(dataType, record.CellArray[headerIndex])
+                    : dataType.IsClass
+                        ? null
+                        : Activator.CreateInstance(dataType));
             return dataList;
         }
         
@@ -188,7 +192,11 @@ namespace GameUtil.Config
             if (headerIndex < 0) headerIndex = 0;
             if (!TryInitConvertColumnByIndex(dataType, csvContent, headerIndex, cellSeparator, supportCellMultiline, out var csvTableReader)) yield break;
             foreach (var record in csvTableReader.Records)
-                yield return headerIndex < record.CellArray.Length ? FieldConverter.Convert(dataType, record.CellArray[headerIndex]) : default;
+                yield return headerIndex < record.CellArray.Length
+                    ? FieldConverter.Convert(dataType, record.CellArray[headerIndex])
+                    : dataType.IsClass
+                        ? null
+                        : Activator.CreateInstance(dataType);
         }
 
         private static bool TryInitConvert(Type dataType, string csvContent, char cellSeparator, bool supportCellMultiline, out CSVTableReader csvTableReader, out FieldInfo[] fieldInfos)

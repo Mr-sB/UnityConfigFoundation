@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using GameUtil.Config;
+using TinyCSV;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -25,7 +26,18 @@ namespace GameUtil.Config.Editor
 
         public static void CreateClass(string csvPath, string modelPath, string namespaceName, string modelName, string configPath, string configName, bool refresh = true)
         {
-            string modelContent = CSVGenerator.CSV2Class(TextAssetLoader.LoadInEditor(csvPath), namespaceName, modelName);
+            Write(CSVGenerator.CSV2Class(TextAssetLoader.LoadInEditor(csvPath), namespaceName, modelName),
+                modelPath, namespaceName, modelName, configPath, configName, refresh);
+        }
+        
+        public static void CreateClass(CSVTableReader csvTableReader, string modelPath, string namespaceName, string modelName, string configPath, string configName, bool refresh = true)
+        {
+            Write(CSVGenerator.CSV2Class(csvTableReader, namespaceName, modelName), modelPath,
+                namespaceName, modelName, configPath, configName, refresh);
+        }
+
+        private static void Write(string modelContent, string modelPath, string namespaceName, string modelName, string configPath, string configName, bool refresh)
+        {
             var fullPath = Path.Combine(Application.dataPath, modelPath, modelName + ".cs");
             var directory = Path.GetDirectoryName(fullPath);
             if (!Directory.Exists(directory))
