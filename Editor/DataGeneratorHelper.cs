@@ -23,32 +23,66 @@ namespace GameUtil.Config.Editor
                                                                            + "{{" + Environment.NewLine
                                                                            + "}}" + Environment.NewLine;
 
-        public static void CreateClass(string csvPath, string modelPath, string namespaceName, string modelName, string configPath, string configName)
+        public static void CreateClass(string csvPath, string modelPath, string namespaceName, string modelName, string configPath, string configName, bool refresh = true)
         {
             string modelContent = CSVGenerator.CSV2Class(TextAssetLoader.LoadInEditor(csvPath), namespaceName, modelName);
-            File.WriteAllText(Path.Combine(Application.dataPath, modelPath, modelName + ".cs"), modelContent);
+            var fullPath = Path.Combine(Application.dataPath, modelPath, modelName + ".cs");
+            var directory = Path.GetDirectoryName(fullPath);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+            File.WriteAllText(fullPath, modelContent);
 
             bool hasNameSpace = !string.IsNullOrWhiteSpace(namespaceName);
             string configContent = hasNameSpace
                 ? string.Format(ConfigClassDefineWithNameSpace, namespaceName, configName, modelName)
                 : string.Format(ConfigClassDefineWithoutNameSpace, configName, modelName);
-            File.WriteAllText(Path.Combine(Application.dataPath, configPath, configName + ".cs"), configContent);
+            fullPath = Path.Combine(Application.dataPath, configPath, configName + ".cs");
+            directory = Path.GetDirectoryName(fullPath);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+            File.WriteAllText(fullPath, configContent);
 
-            Refresh();
+            if (refresh)
+                Refresh();
         }
 
-        public static TDataConfig CreateData<TModel, TDataConfig>(string csvPath, string scriptObjectPath)
+        public static TDataConfig CreateData<TModel, TDataConfig>(string csvPath, string scriptObjectPath, bool refresh = true)
             where TModel : new() where TDataConfig : DataConfigBase<TModel>
         {
             var dataConfig = ScriptableObject.CreateInstance<TDataConfig>();
             dataConfig.Data = CSVConverter.Convert<TModel>(TextAssetLoader.LoadInEditor(csvPath));
 
-            var oldConfig = AssetDatabase.LoadAssetAtPath<TDataConfig>(scriptObjectPath);
+            var oldConfig = AssetDatabase.LoadMainAssetAtPath(scriptObjectPath);
             if (oldConfig != null)
                 AssetDatabase.DeleteAsset(scriptObjectPath);
             AssetDatabase.CreateAsset(dataConfig, scriptObjectPath);
 
-            SaveAsset(dataConfig);
+            if (refresh)
+                SaveAsset(dataConfig);
+            else
+                EditorUtility.SetDirty(dataConfig);
+            return dataConfig;
+        }
+        
+        public static ScriptableObject CreateData(Type modelType, Type dataConfigType, string csvPath, string scriptObjectPath, bool refresh = true)
+        {
+            if (!typeof(DataConfigBase<>).MakeGenericType(modelType).IsAssignableFrom(dataConfigType))
+            {
+                Debug.LogErrorFormat("dataConfigType: {0} must inherited from DataConfigBase<{1}>!", dataConfigType, modelType);
+                return null;
+            }
+            var dataConfig = ScriptableObject.CreateInstance(dataConfigType);
+            (dataConfig as IDataConfig).Assign(CSVConverter.Convert(modelType, TextAssetLoader.LoadInEditor(csvPath)));
+
+            var oldConfig = AssetDatabase.LoadMainAssetAtPath(scriptObjectPath);
+            if (oldConfig != null)
+                AssetDatabase.DeleteAsset(scriptObjectPath);
+            AssetDatabase.CreateAsset(dataConfig, scriptObjectPath);
+
+            if (refresh)
+                SaveAsset(dataConfig);
+            else
+                EditorUtility.SetDirty(dataConfig);
             return dataConfig;
         }
 
