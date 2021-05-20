@@ -61,8 +61,14 @@ namespace GameUtil.Config.Editor
         public static TDataConfig CreateData<TModel, TDataConfig>(string csvPath, string scriptObjectPath, bool refresh = true)
             where TModel : new() where TDataConfig : DataConfigBase<TModel>
         {
+            return CreateDataByContent<TModel, TDataConfig>(TextAssetLoader.LoadInEditor(csvPath), scriptObjectPath, refresh);
+        }
+        
+        public static TDataConfig CreateDataByContent<TModel, TDataConfig>(string csvContent, string scriptObjectPath, bool refresh = true)
+            where TModel : new() where TDataConfig : DataConfigBase<TModel>
+        {
             var dataConfig = ScriptableObject.CreateInstance<TDataConfig>();
-            dataConfig.Data = CSVConverter.Convert<TModel>(TextAssetLoader.LoadInEditor(csvPath));
+            dataConfig.Data = CSVConverter.Convert<TModel>(csvContent);
 
             var oldConfig = AssetDatabase.LoadMainAssetAtPath(scriptObjectPath);
             if (oldConfig != null)
@@ -78,13 +84,19 @@ namespace GameUtil.Config.Editor
         
         public static ScriptableObject CreateData(Type modelType, Type dataConfigType, string csvPath, string scriptObjectPath, bool refresh = true)
         {
+            return CreateDataByContent(modelType, dataConfigType, TextAssetLoader.LoadInEditor(csvPath),
+                scriptObjectPath, refresh);
+        }
+        
+        public static ScriptableObject CreateDataByContent(Type modelType, Type dataConfigType, string csvContent, string scriptObjectPath, bool refresh = true)
+        {
             if (!typeof(DataConfigBase<>).MakeGenericType(modelType).IsAssignableFrom(dataConfigType))
             {
                 Debug.LogErrorFormat("dataConfigType: {0} must inherited from DataConfigBase<{1}>!", dataConfigType, modelType);
                 return null;
             }
             var dataConfig = ScriptableObject.CreateInstance(dataConfigType);
-            (dataConfig as IDataConfig).Assign(CSVConverter.Convert(modelType, TextAssetLoader.LoadInEditor(csvPath)));
+            (dataConfig as IDataConfig).Assign(CSVConverter.Convert(modelType, csvContent));
 
             var oldConfig = AssetDatabase.LoadMainAssetAtPath(scriptObjectPath);
             if (oldConfig != null)
