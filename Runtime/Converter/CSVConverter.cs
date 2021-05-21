@@ -210,6 +210,12 @@ namespace GameUtil.Config
             fieldInfos = new FieldInfo[fieldLen];
             for (int i = 0; i < fieldLen; i++)
             {
+                //Skip empty header column.
+                if (string.IsNullOrEmpty(csvTableReader.Headers[i]))
+                {
+                    fieldInfos[i] = null;
+                    continue;
+                }
                 try
                 {
                     var fieldInfo = dataType.GetField(csvTableReader.Headers[i]);

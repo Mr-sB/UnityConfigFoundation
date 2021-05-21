@@ -13,7 +13,8 @@ namespace GameUtil.Config.Example
         public string Data5;
         public Vector3[] Data6;
         public ValueTuple<Color, string> Data7;
-        public List<ValueTuple<Color, string>> Data8;
+        public ValueTuple<Color, string>[] Data8;
+        public List<ValueTuple<Color, string>> Data9;
 
         public override string ToString()
         {
@@ -31,11 +32,20 @@ namespace GameUtil.Config.Example
 
             str += nameof(Data7) + ":" + Data7 + ";" + nameof(Data8) + ":";
             if (Data8 == null)
-                str += "null";
-            else if(Data8.Count > 0)
+                str += "null;";
+            else if(Data8.Length > 0)
             {
                 str += "{";
                 foreach (var data in Data8)
+                    str += data;
+                str += "};";
+            }
+            if (Data9 == null)
+                str += "null";
+            else if(Data9.Count > 0)
+            {
+                str += "{";
+                foreach (var data in Data9)
                     str += data;
                 str += "}";
             }

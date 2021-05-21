@@ -49,6 +49,7 @@ namespace GameUtil.Config.Example
                 .AddCell("\"string with double quote")
                 .AddCell("1;2;3|4;5;6")
                 .AddCell("#cccccc;string content")
+                .AddCell("#cccccc;string content|#ffffff;second string")
                 .AddCell("#cccccc;string content|#ffffff;second string"));
             csvTableWriter.AddRecord(new CSVRecordWriter()
                 .AddCell("3")
@@ -58,6 +59,7 @@ namespace GameUtil.Config.Example
                 .AddCell("\"string with\", comma and \"double quote")
                 .AddCell("7;8;9|10;11;12|7;7;7")
                 .AddCell("#dddddd;string content2")
+                .AddCell("#dddddd;string content2|#eeeeee;second string2")
                 .AddCell("#dddddd;string content2|#eeeeee;second string2"));
             Debug.LogError("csv add data:\n" + csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix));
             
