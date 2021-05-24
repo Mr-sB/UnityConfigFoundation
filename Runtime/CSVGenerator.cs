@@ -32,7 +32,7 @@ namespace GameUtil.Config
 
         public static string CSV2Class(string csvContent, string namespaceName, string className, char cellSeparator = CSVDataHelper.CommaCharacter)
         {
-            return CSV2Class(new CSVTableReader(csvContent, cellSeparator, true, false), namespaceName, className);
+            return CSV2Class(new CSVTableReader(csvContent, cellSeparator, true, 0), namespaceName, className);
         }
         
         public static string CSV2Class(CSVTableReader table, string namespaceName, string className)
