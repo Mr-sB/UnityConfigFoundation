@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using GameUtil.Config;
 using TinyCSV;
 using UnityEditor;
 using UnityEngine;
@@ -10,19 +9,24 @@ namespace GameUtil.Config.Editor
 {
     public static class DataGeneratorHelper
     {
-        private static readonly string ConfigClassDefineWithNameSpace = "using GameUtil.Config;" + Environment.NewLine + Environment.NewLine
-                                                                        + "namespace {0}" + Environment.NewLine
-                                                                        + "{{" + Environment.NewLine
-                                                                        + "    public class {1} : DataConfigBase<{2}>" +
-                                                                        Environment.NewLine
-                                                                        + "    {{" + Environment.NewLine
-                                                                        + "    }}" + Environment.NewLine
-                                                                        + "}}" + Environment.NewLine;
+        private const string CONFIG_CLASS_DEFINE_WITH_NAMESPACE =
+@"using GameUtil.Config;
 
-        private static readonly string ConfigClassDefineWithoutNameSpace = "using GameUtil.Config;" + Environment.NewLine + Environment.NewLine
-                                                                           + "public class {0} : DataConfigBase<{1}>" + Environment.NewLine
-                                                                           + "{{" + Environment.NewLine
-                                                                           + "}}" + Environment.NewLine;
+namespace {0}
+{{
+    public class {1} : DataConfigBase<{2}>
+    {{
+    }}
+}}
+";
+
+        private const string CONFIG_CLASS_DEFINE_WITHOUT_NAMESPACE =
+@"using GameUtil.Config;
+
+public class {0} : DataConfigBase<{1}>
+{{
+}}
+";
 
         public static void CreateClass(string csvPath, string modelPath, string namespaceName, string modelName, string configPath, string configName, bool refresh = true)
         {
@@ -46,8 +50,8 @@ namespace GameUtil.Config.Editor
 
             bool hasNameSpace = !string.IsNullOrWhiteSpace(namespaceName);
             string configContent = hasNameSpace
-                ? string.Format(ConfigClassDefineWithNameSpace, namespaceName, configName, modelName)
-                : string.Format(ConfigClassDefineWithoutNameSpace, configName, modelName);
+                ? string.Format(CONFIG_CLASS_DEFINE_WITH_NAMESPACE, namespaceName, configName, modelName)
+                : string.Format(CONFIG_CLASS_DEFINE_WITHOUT_NAMESPACE, configName, modelName);
             fullPath = Path.Combine(Application.dataPath, configPath, configName + ".cs");
             directory = Path.GetDirectoryName(fullPath);
             if (!Directory.Exists(directory))
@@ -58,7 +62,15 @@ namespace GameUtil.Config.Editor
                 Refresh();
         }
 
+        #region CreateData Generic
+        [Obsolete("Use CreateDataByPath instead.")]
         public static TDataConfig CreateData<TModel, TDataConfig>(string csvPath, string scriptObjectPath, bool refresh = true)
+            where TModel : new() where TDataConfig : DataConfigBase<TModel>
+        {
+            return CreateDataByPath<TModel, TDataConfig>(csvPath, scriptObjectPath, refresh);
+        }
+        
+        public static TDataConfig CreateDataByPath<TModel, TDataConfig>(string csvPath, string scriptObjectPath, bool refresh = true)
             where TModel : new() where TDataConfig : DataConfigBase<TModel>
         {
             return CreateDataByContent<TModel, TDataConfig>(TextAssetLoader.LoadInEditor(csvPath), scriptObjectPath, refresh);
@@ -70,22 +82,53 @@ namespace GameUtil.Config.Editor
             var dataConfig = ScriptableObject.CreateInstance<TDataConfig>();
             dataConfig.Data = CSVConverter.Convert<TModel>(csvContent);
 
-            var oldConfig = AssetDatabase.LoadMainAssetAtPath(scriptObjectPath);
-            if (oldConfig != null)
-                AssetDatabase.DeleteAsset(scriptObjectPath);
-            AssetDatabase.CreateAsset(dataConfig, scriptObjectPath);
+            CreateAsset(scriptObjectPath, dataConfig, refresh);
+            return dataConfig;
+        }
 
-            if (refresh)
-                SaveAsset(dataConfig);
-            else
-                EditorUtility.SetDirty(dataConfig);
+        public static TDataConfig CreateColumnDataByPath<TModel, TDataConfig>(string csvPath, string scriptObjectPath, int headerIndex = 0, bool refresh = true)
+            where TDataConfig : DataConfigBase<TModel>
+        {
+            return CreateColumnDataByContent<TModel, TDataConfig>(TextAssetLoader.LoadInEditor(csvPath), scriptObjectPath, headerIndex, refresh);
+        }
+        
+        public static TDataConfig CreateColumnDataByPath<TModel, TDataConfig>(string csvPath, string scriptObjectPath, string headerName, bool refresh = true)
+            where TDataConfig : DataConfigBase<TModel>
+        {
+            return CreateColumnDataByContent<TModel, TDataConfig>(TextAssetLoader.LoadInEditor(csvPath), scriptObjectPath, headerName, refresh);
+        }
+        
+        public static TDataConfig CreateColumnDataByContent<TModel, TDataConfig>(string csvContent, string scriptObjectPath, int headerIndex = 0, bool refresh = true)
+            where TDataConfig : DataConfigBase<TModel>
+        {
+            var dataConfig = ScriptableObject.CreateInstance<TDataConfig>();
+            dataConfig.Data = CSVConverter.ConvertColumn<TModel>(csvContent, headerIndex);
+            
+            CreateAsset(scriptObjectPath, dataConfig, refresh);
             return dataConfig;
         }
         
+        public static TDataConfig CreateColumnDataByContent<TModel, TDataConfig>(string csvContent, string scriptObjectPath, string headerName, bool refresh = true)
+            where TDataConfig : DataConfigBase<TModel>
+        {
+            var dataConfig = ScriptableObject.CreateInstance<TDataConfig>();
+            dataConfig.Data = CSVConverter.ConvertColumn<TModel>(csvContent, headerName);
+            
+            CreateAsset(scriptObjectPath, dataConfig, refresh);
+            return dataConfig;
+        }
+        #endregion
+
+        #region CreateData Type
+        [Obsolete("Use CreateDataByPath instead.")]
         public static ScriptableObject CreateData(Type modelType, Type dataConfigType, string csvPath, string scriptObjectPath, bool refresh = true)
         {
-            return CreateDataByContent(modelType, dataConfigType, TextAssetLoader.LoadInEditor(csvPath),
-                scriptObjectPath, refresh);
+            return CreateDataByPath(modelType, dataConfigType, csvPath, scriptObjectPath, refresh);
+        }
+        
+        public static ScriptableObject CreateDataByPath(Type modelType, Type dataConfigType, string csvPath, string scriptObjectPath, bool refresh = true)
+        {
+            return CreateDataByContent(modelType, dataConfigType, TextAssetLoader.LoadInEditor(csvPath), scriptObjectPath, refresh);
         }
         
         public static ScriptableObject CreateDataByContent(Type modelType, Type dataConfigType, string csvContent, string scriptObjectPath, bool refresh = true)
@@ -98,18 +141,62 @@ namespace GameUtil.Config.Editor
             var dataConfig = ScriptableObject.CreateInstance(dataConfigType);
             (dataConfig as IDataConfig).Assign(CSVConverter.Convert(modelType, csvContent));
 
-            var oldConfig = AssetDatabase.LoadMainAssetAtPath(scriptObjectPath);
-            if (oldConfig != null)
-                AssetDatabase.DeleteAsset(scriptObjectPath);
-            AssetDatabase.CreateAsset(dataConfig, scriptObjectPath);
-
-            if (refresh)
-                SaveAsset(dataConfig);
-            else
-                EditorUtility.SetDirty(dataConfig);
+            CreateAsset(scriptObjectPath, dataConfig, refresh);
             return dataConfig;
         }
+        
+        public static ScriptableObject CreateColumnDataByPath(Type modelType, Type dataConfigType, string csvPath, string scriptObjectPath, int headerIndex = 0, bool refresh = true)
+        {
+            return CreateColumnDataByContent(modelType, dataConfigType, TextAssetLoader.LoadInEditor(csvPath), scriptObjectPath, headerIndex, refresh);
+        }
+        
+        public static ScriptableObject CreateColumnDataByPath(Type modelType, Type dataConfigType, string csvPath, string scriptObjectPath, string headerName, bool refresh = true)
+        {
+            return CreateColumnDataByContent(modelType, dataConfigType, TextAssetLoader.LoadInEditor(csvPath), scriptObjectPath, headerName, refresh);
+        }
+        
+        public static ScriptableObject CreateColumnDataByContent(Type modelType, Type dataConfigType, string csvContent, string scriptObjectPath, int headerIndex = 0, bool refresh = true)
+        {
+            if (!typeof(DataConfigBase<>).MakeGenericType(modelType).IsAssignableFrom(dataConfigType))
+            {
+                Debug.LogErrorFormat("dataConfigType: {0} must inherited from DataConfigBase<{1}>!", dataConfigType, modelType);
+                return null;
+            }
+            var dataConfig = ScriptableObject.CreateInstance(dataConfigType);
+            (dataConfig as IDataConfig).Assign(CSVConverter.ConvertColumn(modelType, csvContent, headerIndex));
+            
+            CreateAsset(scriptObjectPath, dataConfig, refresh);
+            return dataConfig;
+        }
+        
+        public static ScriptableObject CreateColumnDataByContent(Type modelType, Type dataConfigType, string csvContent, string scriptObjectPath, string headerName, bool refresh = true)
+        {
+            if (!typeof(DataConfigBase<>).MakeGenericType(modelType).IsAssignableFrom(dataConfigType))
+            {
+                Debug.LogErrorFormat("dataConfigType: {0} must inherited from DataConfigBase<{1}>!", dataConfigType, modelType);
+                return null;
+            }
+            var dataConfig = ScriptableObject.CreateInstance(dataConfigType);
+            (dataConfig as IDataConfig).Assign(CSVConverter.ConvertColumn(modelType, csvContent, headerName));
+            
+            CreateAsset(scriptObjectPath, dataConfig, refresh);
+            return dataConfig;
+        }
+        #endregion
 
+        public static void CreateAsset(string assetPath, Object asset, bool refresh)
+        {
+            var oldConfig = AssetDatabase.LoadMainAssetAtPath(assetPath);
+            if (oldConfig != null)
+                AssetDatabase.DeleteAsset(assetPath);
+            AssetDatabase.CreateAsset(asset, assetPath);
+
+            if (refresh)
+                SaveAsset(asset);
+            else
+                EditorUtility.SetDirty(asset);
+        }
+        
         public static void SaveAsset(Object obj)
         {
             EditorUtility.SetDirty(obj);

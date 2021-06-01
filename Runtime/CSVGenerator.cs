@@ -10,25 +10,31 @@ namespace GameUtil.Config
     /// </summary>
     public static class CSVGenerator
     {
-        private static readonly string ClassHeadTemplate = "using System;" + Environment.NewLine
-                                                           + "using System.Collections.Generic;" + Environment.NewLine
-                                                           + "using UnityEngine;" + Environment.NewLine
-                                                           + Environment.NewLine;
+        private const string CLASS_HEAD_TEMPLATE =
+@"using System;
+using System.Collections.Generic;
+using UnityEngine;
 
-        private static readonly string ClassDefineWithNameSpace = "namespace {0}" + Environment.NewLine
-                                                                  + "{{" + Environment.NewLine
-                                                                  + "    [Serializable]" + Environment.NewLine
-                                                                  + "    public class {1}" + Environment.NewLine
-                                                                  + "    {{" + Environment.NewLine
-                                                                  + "{2}" + Environment.NewLine
-                                                                  + "    }}" + Environment.NewLine
-                                                                  + "}}" + Environment.NewLine;
+";
 
-        private static readonly string ClassDefineWithoutNameSpace = "[Serializable]" + Environment.NewLine
-                                                                     + "public class {0}" + Environment.NewLine
-                                                                     + "{{" + Environment.NewLine
-                                                                     + "{1}" + Environment.NewLine
-                                                                     + "}}" + Environment.NewLine;
+        private const string CLASS_DEFINE_WITH_NAMESPACE =
+@"namespace {0}
+{{
+    [Serializable]
+    public class {1}
+    {{
+{2}
+    }}
+}}
+";
+
+        private const string CLASS_DEFINE_WITHOUT_NAMESPACE =
+@"[Serializable]
+public class {0}
+{{
+{1}
+}}
+";
 
         public static string CSV2Class(string csvContent, string namespaceName, string className, char cellSeparator = CSVDataHelper.CommaCharacter)
         {
@@ -48,7 +54,7 @@ namespace GameUtil.Config
                 if (isFirstLine)
                     isFirstLine = false;
                 else
-                    sb.Append(Environment.NewLine);
+                    sb.Append('\n');
                 sb.Append(space);
                 sb.Append("public ");
                 sb.Append(table.Descriptions[i]);
@@ -58,8 +64,8 @@ namespace GameUtil.Config
             }
 
             if (hasNameSpace)
-                return ClassHeadTemplate + string.Format(ClassDefineWithNameSpace, namespaceName, className, sb);
-            return ClassHeadTemplate + string.Format(ClassDefineWithoutNameSpace, className, sb);
+                return CLASS_HEAD_TEMPLATE + string.Format(CLASS_DEFINE_WITH_NAMESPACE, namespaceName, className, sb);
+            return CLASS_HEAD_TEMPLATE + string.Format(CLASS_DEFINE_WITHOUT_NAMESPACE, className, sb);
         }
         
         public static CSVTableWriter Class2CSVTable<T>(char cellSeparator = CSVDataHelper.CommaCharacter)

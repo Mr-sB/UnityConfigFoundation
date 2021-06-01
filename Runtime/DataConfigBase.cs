@@ -11,7 +11,7 @@ namespace GameUtil.Config
         void Add(object item);
     }
     
-    public class DataConfigBase<T> : ScriptableObject, IDataConfig where T : new()
+    public class DataConfigBase<T> : ScriptableObject, IDataConfig
     {
         public List<T> Data;
         
