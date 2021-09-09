@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace GameUtil.Config.Example
 {
+    [Serializable]
     public class ExampleTestData
     {
         public int Data1;
@@ -12,6 +13,7 @@ namespace GameUtil.Config.Example
         public string Data4;
         public string Data5;
         public Vector3[] Data6;
+        //CSVConverter.Convert can handle following type, but can not serialize into scriptableObject.
         public ValueTuple<Color, string> Data7;
         public ValueTuple<Color, string>[] Data8;
         public List<ValueTuple<Color, string>> Data9;

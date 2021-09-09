@@ -1,0 +1,4 @@
+Data1,Data2,Data3,Data4,Data5,Data6
+int,Color,int,string,string,Vector3[]
+1,#cccccc,2,normal string,"""string with double quote",1;2;3|4;5;6
+3,#dddddd,4,"string with, comma","""string with"", comma and ""double quote",7;8;9|10;11;12|7;7;7

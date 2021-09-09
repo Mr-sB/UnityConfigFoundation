@@ -8,10 +8,10 @@ namespace GameUtil.Config.Example
     [ExecuteAlways]
     public class CSVExample : MonoBehaviour
     {
-        private void OnEnable()
+        public void CSVReadAndWriteTest()
         {
             //Support List<> data type.
-            Debug.LogError("Auto generate data list:");
+            Debug.Log("Auto generate data list:");
             foreach (var data in CSVConverter.ConvertColumn<List<float>>(
                 new CSVTableWriter()
                     .AddHeader("Item1")
@@ -19,10 +19,10 @@ namespace GameUtil.Config.Example
                     .AddRecord(new CSVRecordWriter().AddCell("1.25|3.33|2.5|4"))
                     .AddRecord(new CSVRecordWriter().AddCell("2.5|4|5.1"))
                     .GetEncodeTable()))
-                Debug.LogError(string.Join("|", data));
+                Debug.Log(string.Join("|", data));
             
             //Using ValueTuple as the data type.
-            Debug.LogError("Auto generate data list:");
+            Debug.Log("Auto generate data list:");
             foreach (var data in CSVConverter.Convert<ValueTuple<float, string>>(
                 new CSVTableWriter()
                     .AddHeader("Item1")
@@ -32,14 +32,14 @@ namespace GameUtil.Config.Example
                     .AddRecord(new CSVRecordWriter().AddCell("1.25").AddCell("first"))
                     .AddRecord(new CSVRecordWriter().AddCell("2.5").AddCell("second"))
                     .GetEncodeTable()))
-                Debug.LogError(data);
+                Debug.Log(data);
             
             //Custom cell separator.
             CSVTableWriter csvTableWriter = CSVGenerator.Class2CSVTable<ExampleTestData>(';');
-            Debug.LogError("Auto generate csv:\n" + csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix));
+            Debug.Log("Auto generate csv:\n" + csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix));
 
             string classStr = CSVGenerator.CSV2Class(csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix), null, nameof(ExampleTestData), csvTableWriter.CellSeparator);
-            Debug.LogError("Auto generate class:\n" + classStr);
+            Debug.Log("Auto generate class:\n" + classStr);
 
             csvTableWriter.AddRecord(new CSVRecordWriter()
                 .AddCell("1")
@@ -61,16 +61,16 @@ namespace GameUtil.Config.Example
                 .AddCell("#dddddd;string content2")
                 .AddCell("#dddddd;string content2|#eeeeee;second string2")
                 .AddCell("#dddddd;string content2|#eeeeee;second string2"));
-            Debug.LogError("csv add data:\n" + csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix));
+            Debug.Log("csv add data:\n" + csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix));
             
             var dataList = CSVConverter.Convert<ExampleTestData>(csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix), csvTableWriter.CellSeparator);
-            Debug.LogError("Auto generate data list:");
+            Debug.Log("Auto generate data list:");
             foreach (var data in dataList)
-                Debug.LogError(data);
+                Debug.Log(data);
 
-            Debug.LogError("Auto generate data IEnumerable:");
+            Debug.Log("Auto generate data IEnumerable:");
             foreach (var data in CSVConverter.ConvertEnumerator<ExampleTestData>(csvTableWriter.GetEncodeTable(NewLineStyle.NonUnix), csvTableWriter.CellSeparator))
-                Debug.LogError(data);
+                Debug.Log(data);
 
             string newContent = new CSVTableWriter()
                 .AddHeader("Name")
@@ -83,13 +83,13 @@ namespace GameUtil.Config.Example
                 .AddRecord(new CSVRecordWriter().AddCell("Name4").AddCell("40"))
                 .GetEncodeTable(NewLineStyle.NonUnix);
             
-            Debug.LogError("Auto generate column data by header name:");
+            Debug.Log("Auto generate column data by header name:");
             foreach (var name in CSVConverter.ConvertColumn<string>(newContent, "Name"))
-                Debug.LogError(name);
+                Debug.Log(name);
             
-            Debug.LogError("Auto generate column data by header index:");
+            Debug.Log("Auto generate column data by header index:");
             foreach (var age in CSVConverter.ConvertColumn<int>(newContent, 1))
-                Debug.LogError(age);
+                Debug.Log(age);
         }
     }
 }
