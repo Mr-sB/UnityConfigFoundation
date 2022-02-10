@@ -30,34 +30,41 @@ public class {0} : DataConfigBase<{1}>
 
         public static void CreateClass(string csvPath, string modelPath, string namespaceName, string modelName, string configPath, string configName, bool refresh = true)
         {
-            Write(CSVGenerator.CSV2Class(TextAssetLoader.LoadInEditor(csvPath), namespaceName, modelName),
-                modelPath, namespaceName, modelName, configPath, configName, refresh);
+            CreateModelClass(csvPath, modelPath, namespaceName, modelName, false);
+            CreateConfigClass(namespaceName, modelName, configPath, configName, refresh);
         }
         
         public static void CreateClass(CSVTableReader csvTableReader, string modelPath, string namespaceName, string modelName, string configPath, string configName, bool refresh = true)
         {
-            Write(CSVGenerator.CSV2Class(csvTableReader, namespaceName, modelName), modelPath,
-                namespaceName, modelName, configPath, configName, refresh);
+            CreateModelClass(CSVGenerator.CSV2Class(csvTableReader, namespaceName, modelName), modelPath, namespaceName, modelName, false);
+            CreateConfigClass(namespaceName, modelName, configPath, configName, refresh);
         }
-
-        private static void Write(string modelContent, string modelPath, string namespaceName, string modelName, string configPath, string configName, bool refresh)
+        
+        public static void CreateModelClass(string csvPath, string modelPath, string namespaceName, string modelName, bool refresh = true)
         {
-            var fullPath = Path.Combine(Application.dataPath, modelPath, modelName + ".cs");
-            var directory = Path.GetDirectoryName(fullPath);
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-            File.WriteAllText(fullPath, modelContent);
-
+            Write(CSVGenerator.CSV2Class(File.ReadAllText(csvPath), namespaceName, modelName), Path.Combine(modelPath, modelName + ".cs"), refresh);
+        }
+        
+        public static void CreateModelClass(CSVTableReader csvTableReader, string modelPath, string namespaceName, string modelName, bool refresh = true)
+        {
+            Write(CSVGenerator.CSV2Class(csvTableReader, namespaceName, modelName), Path.Combine(modelPath, modelName + ".cs"), refresh);
+        }
+        
+        public static void CreateConfigClass(string namespaceName, string modelName, string configPath, string configName, bool refresh = true)
+        {
             bool hasNameSpace = !string.IsNullOrWhiteSpace(namespaceName);
             string configContent = hasNameSpace
                 ? string.Format(CONFIG_CLASS_DEFINE_WITH_NAMESPACE, namespaceName, configName, modelName)
                 : string.Format(CONFIG_CLASS_DEFINE_WITHOUT_NAMESPACE, configName, modelName);
-            fullPath = Path.Combine(Application.dataPath, configPath, configName + ".cs");
-            directory = Path.GetDirectoryName(fullPath);
+            Write(configContent, Path.Combine(configPath, configName + ".cs"), refresh);
+        }
+        
+        private static void Write(string content, string path, bool refresh)
+        {
+            var directory = Path.GetDirectoryName(path);
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
-            File.WriteAllText(fullPath, configContent);
-
+            File.WriteAllText(path, content);
             if (refresh)
                 Refresh();
         }
