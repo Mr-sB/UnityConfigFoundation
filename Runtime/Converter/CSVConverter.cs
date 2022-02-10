@@ -13,6 +13,8 @@ namespace GameUtil.Config
     /// </summary>
     public static class CSVConverter
     {
+        public const int HeaderRow = 2;
+        
         #region Generic
 
         /// <summary>
@@ -43,9 +45,10 @@ namespace GameUtil.Config
         public static List<T> ConvertColumn<T>(string csvContent, string headerName, char cellSeparator = CSVDataHelper.CommaCharacter, bool supportCellMultiline = true)
         {
             if (!TryInitConvertColumnByName<T>(csvContent, headerName, cellSeparator, supportCellMultiline, out var csvTableReader)) return null;
+            var index = Array.IndexOf(csvTableReader.Headers[0], headerName);
             List<T> dataList = new List<T>(csvTableReader.RecordRow);
             foreach (var record in csvTableReader.Records)
-                dataList.Add(FieldConverter.Convert<T>(record.CellDict[headerName]));
+                dataList.Add(FieldConverter.Convert<T>(record.Cells[index]));
             return dataList;
         }
         
@@ -55,8 +58,9 @@ namespace GameUtil.Config
         public static IEnumerable<T> ConvertColumnEnumerator<T>(string csvContent, string headerName, char cellSeparator = CSVDataHelper.CommaCharacter, bool supportCellMultiline = true)
         {
             if (!TryInitConvertColumnByName<T>(csvContent, headerName, cellSeparator, supportCellMultiline, out var csvTableReader)) yield break;
+            var index = Array.IndexOf(csvTableReader.Headers[0], headerName);
             foreach (var record in csvTableReader.Records)
-                yield return FieldConverter.Convert<T>(record.CellDict[headerName]);
+                yield return FieldConverter.Convert<T>(record.Cells[index]);
         }
         
         /// <summary>
@@ -68,7 +72,7 @@ namespace GameUtil.Config
             if (!TryInitConvertColumnByIndex<T>(csvContent, headerIndex, cellSeparator, supportCellMultiline, out var csvTableReader)) return null;
             List<T> dataList = new List<T>(csvTableReader.RecordRow);
             foreach (var record in csvTableReader.Records)
-                dataList.Add(headerIndex < record.CellArray.Length ? FieldConverter.Convert<T>(record.CellArray[headerIndex]) : default);
+                dataList.Add(headerIndex < record.Cells.Length ? FieldConverter.Convert<T>(record.Cells[headerIndex]) : default);
             return dataList;
         }
         
@@ -80,7 +84,7 @@ namespace GameUtil.Config
             if (headerIndex < 0) headerIndex = 0;
             if (!TryInitConvertColumnByIndex<T>(csvContent, headerIndex, cellSeparator, supportCellMultiline, out var csvTableReader)) yield break;
             foreach (var record in csvTableReader.Records)
-                yield return headerIndex < record.CellArray.Length ? FieldConverter.Convert<T>(record.CellArray[headerIndex]) : default;
+                yield return headerIndex < record.Cells.Length ? FieldConverter.Convert<T>(record.Cells[headerIndex]) : default;
         }
 
         private static bool TryInitConvert<T>(string csvContent, char cellSeparator, bool supportCellMultiline, out CSVTableReader csvTableReader, out FieldInfo[] fieldInfos)
@@ -94,7 +98,7 @@ namespace GameUtil.Config
             int fieldLen = fieldInfos.Length;
             foreach (var record in records)
             {
-                var cellArray = record.CellArray;
+                var cellArray = record.Cells;
                 //生成单个数据对象 使用object，如果是struct则会装箱，否则SetValue更改的是data拷贝对象的值
                 object data = new T();
                 for (int j = 0, len = Mathf.Min(fieldLen, cellArray.Length); j < len; j++)
@@ -151,9 +155,10 @@ namespace GameUtil.Config
         public static IList ConvertColumn(Type dataType, string csvContent, string headerName, char cellSeparator = CSVDataHelper.CommaCharacter, bool supportCellMultiline = true)
         {
             if (!TryInitConvertColumnByName(dataType, csvContent, headerName, cellSeparator, supportCellMultiline, out var csvTableReader)) return null;
+            var index = Array.IndexOf(csvTableReader.Headers[0], headerName);
             var dataList = Activator.CreateInstance(typeof(List<>).MakeGenericType(dataType), csvTableReader.RecordRow) as IList;
             foreach (var record in csvTableReader.Records)
-                dataList.Add(FieldConverter.Convert(dataType, record.CellDict[headerName]));
+                dataList.Add(FieldConverter.Convert(dataType, record.Cells[index]));
             return dataList;
         }
         
@@ -163,8 +168,9 @@ namespace GameUtil.Config
         public static IEnumerable ConvertColumnEnumerator(Type dataType, string csvContent, string headerName, char cellSeparator = CSVDataHelper.CommaCharacter, bool supportCellMultiline = true)
         {
             if (!TryInitConvertColumnByName(dataType, csvContent, headerName, cellSeparator, supportCellMultiline, out var csvTableReader)) yield break;
+            var index = Array.IndexOf(csvTableReader.Headers[0], headerName);
             foreach (var record in csvTableReader.Records)
-                yield return FieldConverter.Convert(dataType, record.CellDict[headerName]);
+                yield return FieldConverter.Convert(dataType, record.Cells[index]);
         }
         
         /// <summary>
@@ -176,8 +182,8 @@ namespace GameUtil.Config
             if (!TryInitConvertColumnByIndex(dataType, csvContent, headerIndex, cellSeparator, supportCellMultiline, out var csvTableReader)) return null;
             var dataList = Activator.CreateInstance(typeof(List<>).MakeGenericType(dataType), csvTableReader.RecordRow) as IList;
             foreach (var record in csvTableReader.Records)
-                dataList.Add(headerIndex < record.CellArray.Length
-                    ? FieldConverter.Convert(dataType, record.CellArray[headerIndex])
+                dataList.Add(headerIndex < record.Cells.Length
+                    ? FieldConverter.Convert(dataType, record.Cells[headerIndex])
                     : dataType.IsClass
                         ? null
                         : Activator.CreateInstance(dataType));
@@ -192,8 +198,8 @@ namespace GameUtil.Config
             if (headerIndex < 0) headerIndex = 0;
             if (!TryInitConvertColumnByIndex(dataType, csvContent, headerIndex, cellSeparator, supportCellMultiline, out var csvTableReader)) yield break;
             foreach (var record in csvTableReader.Records)
-                yield return headerIndex < record.CellArray.Length
-                    ? FieldConverter.Convert(dataType, record.CellArray[headerIndex])
+                yield return headerIndex < record.Cells.Length
+                    ? FieldConverter.Convert(dataType, record.Cells[headerIndex])
                     : dataType.IsClass
                         ? null
                         : Activator.CreateInstance(dataType);
@@ -201,31 +207,32 @@ namespace GameUtil.Config
 
         private static bool TryInitConvert(Type dataType, string csvContent, char cellSeparator, bool supportCellMultiline, out CSVTableReader csvTableReader, out FieldInfo[] fieldInfos)
         {
-            csvTableReader = new CSVTableReader(csvContent, cellSeparator, supportCellMultiline);
+            csvTableReader = new CSVTableReader(csvContent, HeaderRow, cellSeparator, supportCellMultiline);
             fieldInfos = null;
             if (csvTableReader == null) return false;
 
             //生成所有的字段信息
-            int fieldLen = csvTableReader.Column;
+            var fieldNames = csvTableReader.Headers[0];
+            int fieldLen = fieldNames.Length;
             fieldInfos = new FieldInfo[fieldLen];
             for (int i = 0; i < fieldLen; i++)
             {
                 //Skip empty header column.
-                if (string.IsNullOrEmpty(csvTableReader.Headers[i]))
+                if (string.IsNullOrEmpty(fieldNames[i]))
                 {
                     fieldInfos[i] = null;
                     continue;
                 }
                 try
                 {
-                    var fieldInfo = dataType.GetField(csvTableReader.Headers[i]);
+                    var fieldInfo = dataType.GetField(fieldNames[i]);
                     fieldInfos[i] = fieldInfo;
                     if (fieldInfo == null)
-                        Debug.LogError("fieldName Exception: field info is null! " + csvTableReader.Headers[i]);
+                        Debug.LogError("fieldName Exception: field info is null! " + fieldNames[i]);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError("fieldName Exception. " + csvTableReader.Headers[i]);
+                    Debug.LogError("fieldName Exception. " + fieldNames[i]);
                     Debug.LogError(e);
                 }
             }
@@ -238,7 +245,7 @@ namespace GameUtil.Config
             int fieldLen = fieldInfos.Length;
             foreach (var record in records)
             {
-                var cellArray = record.CellArray;
+                var cellArray = record.Cells;
                 //生成单个数据对象 使用object，如果是struct则会装箱，否则SetValue更改的是data拷贝对象的值
                 object data = Activator.CreateInstance(dataType);
                 for (int j = 0, len = Mathf.Min(fieldLen, cellArray.Length); j < len; j++)
@@ -260,8 +267,8 @@ namespace GameUtil.Config
                 Debug.LogError($"ConvertColumn Exception: Type {dataType.AssemblyQualifiedName} can not convert!");
                 return false;
             }
-            csvTableReader = new CSVTableReader(csvContent, cellSeparator, supportCellMultiline);
-            if (!csvTableReader.Headers.Contains(headerName))
+            csvTableReader = new CSVTableReader(csvContent, HeaderRow, cellSeparator, supportCellMultiline);
+            if (!csvTableReader.Headers[0].Contains(headerName))
             {
                 Debug.LogError($"ConvertColumn Exception: Header {headerName} does not exist!");
                 return false;
@@ -277,10 +284,10 @@ namespace GameUtil.Config
                 Debug.LogError($"ConvertColumn Exception: Type {dataType.AssemblyQualifiedName} can not convert!");
                 return false;
             }
-            csvTableReader = new CSVTableReader(csvContent, cellSeparator, supportCellMultiline);
-            if (csvTableReader.Column <= headerIndex)
+            csvTableReader = new CSVTableReader(csvContent, HeaderRow, cellSeparator, supportCellMultiline);
+            if (csvTableReader.Headers[0].Length <= headerIndex)
             {
-                Debug.LogError($"ConvertColumn Exception: headerIndex {headerIndex} is out of range! Table column is {csvTableReader.Column}.");
+                Debug.LogError($"ConvertColumn Exception: headerIndex {headerIndex} is out of range! Table column is {csvTableReader.Headers[0].Length}.");
                 return false;
             }
             return true;

@@ -61,13 +61,13 @@
             \r\n
             </summary>
         </member>
-        <member name="M:TinyCSV.CSVRecordReader.#ctor(System.String[],System.String,System.Char)">
+        <member name="M:TinyCSV.CSVRecordReader.#ctor(System.String,System.Char,System.Int32)">
             <summary>
             Create a CSVRecordReader.
             </summary>
-            <param name="headers">Headres</param>
             <param name="record">CSV row data.</param>
             <param name="cellSeparator">CSV cells separator.</param>
+            <param name="capacity">List capacity.</param>
         </member>
         <member name="M:TinyCSV.CSVRecordWriter.#ctor(System.Char)">
             <summary>
@@ -102,11 +102,12 @@
             Read csv table.
             </summary>
         </member>
-        <member name="M:TinyCSV.CSVTableReader.#ctor(System.String,System.Char,System.Boolean,System.Int32)">
+        <member name="M:TinyCSV.CSVTableReader.#ctor(System.String,System.Int32,System.Char,System.Boolean,System.Int32)">
             <summary>
             Create a CSVTableReader by csv content.
             </summary>
             <param name="svContent">CSV content.</param>
+            <param name="headerRow">Header Row.</param>
             <param name="cellSeparator">CSV cells separator.</param>
             <param name="supportCellMultiline">If true, support multiline cells but slower, otherwise not support multiline cells but faster.</param>
             <param name="readRecordCount">Read how many record rows. Negative means all records.</param>
@@ -132,11 +133,12 @@
             </summary>
             <param name="cellSeparator">CSV cells separator.</param>
         </member>
-        <member name="M:TinyCSV.CSVTableWriter.#ctor(System.String,System.Char,System.Boolean,System.Int32)">
+        <member name="M:TinyCSV.CSVTableWriter.#ctor(System.String,System.Int32,System.Char,System.Boolean,System.Int32)">
             <summary>
             Create a CSVTableWriter by csv content.
             </summary>
             <param name="svContent">CSV content.</param>
+            <param name="headerRow">Header Row.</param>
             <param name="cellSeparator">CSV cells separator.</param>
             <param name="supportCellMultiline">If true, support multiline cells but slower, otherwise not support multiline cells but faster.</param>
             <param name="readRecordCount">Read how many record rows. Negative means all records.</param>

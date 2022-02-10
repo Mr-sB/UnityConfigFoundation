@@ -13,11 +13,11 @@ namespace GameUtil.Config.Example.Editor
             base.OnInspectorGUI();
             if (GUILayout.Button("CSVReadAndWriteTest"))
             {
-                (target as CSVExample).CSVReadAndWriteTest();
+                ((CSVExample)target).CSVReadAndWriteTest();
             }
             if (GUILayout.Button("CreateOrRefreshDataConfig"))
             {
-                var directoryName = Path.GetDirectoryName((target as CSVExample).gameObject.scene.path);
+                var directoryName = Path.GetDirectoryName(((CSVExample)target).gameObject.scene.path);
                 DataGeneratorHelper.CreateDataByPath<ExampleTestData, ExampleTestDataConfig>(directoryName + "/ExampleTestData.csv", directoryName + "/ExampleTestDataConfig.asset");
                 Debug.Log("CreateOrRefreshDataConfig finish. Click me to select data config asset!", AssetDatabase.LoadMainAssetAtPath(directoryName + "/ExampleTestDataConfig.asset"));
             }

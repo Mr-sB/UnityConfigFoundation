@@ -14,8 +14,7 @@ namespace GameUtil.Config.Example
             Debug.Log("Auto generate data list:");
             foreach (var data in CSVConverter.ConvertColumn<List<float>>(
                 new CSVTableWriter()
-                    .AddHeader("Item1")
-                    .AddDescription("List<float>")
+                    .AddHeader(new List<string> {"Item1"})
                     .AddRecord(new CSVRecordWriter().AddCell("1.25|3.33|2.5|4"))
                     .AddRecord(new CSVRecordWriter().AddCell("2.5|4|5.1"))
                     .GetEncodeTable()))
@@ -25,10 +24,8 @@ namespace GameUtil.Config.Example
             Debug.Log("Auto generate data list:");
             foreach (var data in CSVConverter.Convert<ValueTuple<float, string>>(
                 new CSVTableWriter()
-                    .AddHeader("Item1")
-                    .AddHeader("Item2")
-                    .AddDescription("float")
-                    .AddDescription("string")
+                    .AddHeader(new List<string>{"Item1", "Item2"})
+                    .AddHeader(new List<string>{"float", "string"})
                     .AddRecord(new CSVRecordWriter().AddCell("1.25").AddCell("first"))
                     .AddRecord(new CSVRecordWriter().AddCell("2.5").AddCell("second"))
                     .GetEncodeTable()))
@@ -73,10 +70,8 @@ namespace GameUtil.Config.Example
                 Debug.Log(data);
 
             string newContent = new CSVTableWriter()
-                .AddHeader("Name")
-                .AddHeader("Age")
-                .AddDescription("string")
-                .AddDescription("int")
+                .AddHeader(new List<string>{"Name", "Age"})
+                .AddHeader(new List<string>{"string", "int"})
                 .AddRecord(new CSVRecordWriter().AddCell("Name1").AddCell("10"))
                 .AddRecord(new CSVRecordWriter().AddCell("Name2").AddCell("20"))
                 .AddRecord(new CSVRecordWriter().AddCell("Name3").AddCell("30"))

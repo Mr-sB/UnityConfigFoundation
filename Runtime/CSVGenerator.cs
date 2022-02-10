@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using TinyCSV;
 using UnityEngine;
@@ -38,7 +39,7 @@ public class {0}
 
         public static string CSV2Class(string csvContent, string namespaceName, string className, char cellSeparator = CSVDataHelper.CommaCharacter)
         {
-            return CSV2Class(new CSVTableReader(csvContent, cellSeparator, true, 0), namespaceName, className);
+            return CSV2Class(new CSVTableReader(csvContent, CSVConverter.HeaderRow, cellSeparator, true, 0), namespaceName, className);
         }
         
         public static string CSV2Class(CSVTableReader table, string namespaceName, string className)
@@ -47,19 +48,21 @@ public class {0}
             string space = hasNameSpace ? "        " : "    ";
             StringBuilder sb = new StringBuilder();
             bool isFirstLine = true;
-            for (int i = 0, column = table.Column; i < column; i++)
+            var filedNames = table.Headers[0];
+            var fieldTypes = table.Headers[1];
+            for (int i = 0, column = filedNames.Length; i < column; i++)
             {
                 //Skip empty header column.
-                if (string.IsNullOrEmpty(table.Headers[i])) continue;
+                if (string.IsNullOrEmpty(filedNames[i])) continue;
                 if (isFirstLine)
                     isFirstLine = false;
                 else
                     sb.Append('\n');
                 sb.Append(space);
                 sb.Append("public ");
-                sb.Append(table.Descriptions[i]);
+                sb.Append(fieldTypes[i]);
                 sb.Append(" ");
-                sb.Append(table.Headers[i]);
+                sb.Append(filedNames[i]);
                 sb.Append(";");
             }
 
@@ -81,10 +84,15 @@ public class {0}
                 return null;
             }
             var csvTableWriter = new CSVTableWriter(cellSeparator);
-            foreach (var fieldInfo in type.GetFields())
+            var fieldInfos = type.GetFields();
+            var filedNames = new List<string>(fieldInfos.Length);
+            var fieldTypes = new List<string>(fieldInfos.Length);
+            csvTableWriter.AddHeader(filedNames);
+            csvTableWriter.AddHeader(fieldTypes);
+            foreach (var fieldInfo in fieldInfos)
             {
-                csvTableWriter.Headers.Add(fieldInfo.Name);
-                csvTableWriter.Descriptions.Add(GetTypeName(fieldInfo.FieldType));
+                filedNames.Add(fieldInfo.Name);
+                fieldTypes.Add(GetTypeName(fieldInfo.FieldType));
             }
             return csvTableWriter;
         }
