@@ -11,6 +11,12 @@ Automatically generate data objects according to CSV configuration table.
 | :-------: | :------: | :--: | :--------: | :------------------------------: |
 |     √     |     √    |   √  |      √     |                 √                |
 
+## CSV form
+* First line are field names.
+* Second line are field types.
+* Third line are descriptions.
+* Others are records.
+
 ## Extend
 If you want to add some data type converter, create a class and use `partial` keyword to be part of `FieldConverter` class.
 ```c#

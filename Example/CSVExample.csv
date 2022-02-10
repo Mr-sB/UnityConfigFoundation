@@ -1,5 +1,6 @@
 StringField,BoolField,IntField,FloatField,DoubleFIeld,Vector2Field,Vector3Field,Vector4Field,Vector2IntField,Vector3IntField,ColorField,Vector2ArrayField
 string,bool,int,float,double,Vector2,Vector3,Vector4,Vector2Int,Vector3Int,Color,Vector2[]
+,,,,,,,,,,,
 example,TRUE,10000,99.9,99.9,12.1;55,12.1;55;78,12.1;55;78;12,15;30,15;30;40,255;0;255;255,12.1;55|44;78.5|75;77
 ,FALSE,,,,12.1,12.1;55,12.1;55;78,15,15;30,255;255;255,
 ,0,,,,,12.1,12.1;55,,15,255;255,

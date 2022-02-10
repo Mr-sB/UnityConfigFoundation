@@ -13,14 +13,6 @@ MonoBehaviour:
   m_Name: ExampleTestDataConfig
   m_EditorClassIdentifier: 
   Data:
-  - Data1: 1
-    Data2: {r: 0.8, g: 0.8, b: 0.8, a: 1}
-    Data3: 2
-    Data4: normal string
-    Data5: '"string with double quote'
-    Data6:
-    - {x: 1, y: 2, z: 3}
-    - {x: 4, y: 5, z: 6}
   - Data1: 3
     Data2: {r: 0.8666667, g: 0.8666667, b: 0.8666667, a: 1}
     Data3: 4

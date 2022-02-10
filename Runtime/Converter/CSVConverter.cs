@@ -13,7 +13,7 @@ namespace GameUtil.Config
     /// </summary>
     public static class CSVConverter
     {
-        public const int HeaderRow = 2;
+        public const int HeaderRow = 3;
         
         #region Generic
 
