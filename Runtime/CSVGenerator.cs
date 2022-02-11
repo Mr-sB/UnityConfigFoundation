@@ -48,21 +48,22 @@ public class {0}
             string space = hasNameSpace ? "        " : "    ";
             StringBuilder sb = new StringBuilder();
             bool isFirstLine = true;
-            var filedNames = table.Headers[0];
+            var fieldNames = table.Headers[0];
             var fieldTypes = table.Headers[1];
-            for (int i = 0, column = filedNames.Length; i < column; i++)
+            for (int i = 0, column = fieldNames.Column; i < column; i++)
             {
+                var fieldName = fieldNames.Cells[i];
                 //Skip empty header column.
-                if (string.IsNullOrEmpty(filedNames[i])) continue;
+                if (string.IsNullOrEmpty(fieldName)) continue;
                 if (isFirstLine)
                     isFirstLine = false;
                 else
                     sb.Append('\n');
                 sb.Append(space);
                 sb.Append("public ");
-                sb.Append(fieldTypes[i]);
+                sb.Append(fieldTypes.Cells[i]);
                 sb.Append(" ");
-                sb.Append(filedNames[i]);
+                sb.Append(fieldName);
                 sb.Append(";");
             }
 
@@ -85,13 +86,15 @@ public class {0}
             }
             var csvTableWriter = new CSVTableWriter(cellSeparator);
             var fieldInfos = type.GetFields();
-            var filedNames = new List<string>(fieldInfos.Length);
-            var fieldTypes = new List<string>(fieldInfos.Length);
-            csvTableWriter.AddHeader(filedNames);
+            var fieldNames = new CSVRecordWriter();
+            fieldNames.Cells.Capacity = fieldInfos.Length;
+            var fieldTypes = new CSVRecordWriter();
+            fieldTypes.Cells.Capacity = fieldInfos.Length;
+            csvTableWriter.AddHeader(fieldNames);
             csvTableWriter.AddHeader(fieldTypes);
             foreach (var fieldInfo in fieldInfos)
             {
-                filedNames.Add(fieldInfo.Name);
+                fieldNames.Add(fieldInfo.Name);
                 fieldTypes.Add(GetTypeName(fieldInfo.FieldType));
             }
             return csvTableWriter;

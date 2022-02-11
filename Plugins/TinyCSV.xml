@@ -61,6 +61,12 @@
             \r\n
             </summary>
         </member>
+        <member name="M:TinyCSV.CSVRecordReader.#ctor(System.Char)">
+            <summary>
+            Create a CSVRecordReader.
+            </summary>
+            <param name="cellSeparator">CSV cells separator.</param>
+        </member>
         <member name="M:TinyCSV.CSVRecordReader.#ctor(System.String,System.Char,System.Int32)">
             <summary>
             Create a CSVRecordReader.
@@ -89,6 +95,12 @@
             </summary>
             <param name="cells">IEnumerable cells.</param>
             <param name="cellSeparator">CSV cells separator.</param>
+        </member>
+        <member name="M:TinyCSV.CSVRecordWriter.#ctor(TinyCSV.CSVRecordReader)">
+            <summary>
+            Create a CSVRecordWriter by CSVRecordReader.
+            </summary>
+            <param name="csvRecordReader">CSVRecordReader.</param>
         </member>
         <member name="M:TinyCSV.CSVRecordWriter.#ctor(TinyCSV.CSVRecordReader,System.Char)">
             <summary>
@@ -141,6 +153,13 @@
             <param name="headerRow">Header Row.</param>
             <param name="cellSeparator">CSV cells separator.</param>
             <param name="supportCellMultiline">If true, support multiline cells but slower, otherwise not support multiline cells but faster.</param>
+            <param name="readRecordCount">Read how many record rows. Negative means all records.</param>
+        </member>
+        <member name="M:TinyCSV.CSVTableWriter.#ctor(TinyCSV.CSVTableReader,System.Int32)">
+            <summary>
+            Create a CSVTableWriter by CSVTableReader.
+            </summary>
+            <param name="csvTableReader">CSVTableReader.</param>
             <param name="readRecordCount">Read how many record rows. Negative means all records.</param>
         </member>
         <member name="M:TinyCSV.CSVTableWriter.#ctor(TinyCSV.CSVTableReader,System.Char,System.Int32)">

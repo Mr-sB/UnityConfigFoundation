@@ -45,7 +45,7 @@ namespace GameUtil.Config
         public static List<T> ConvertColumn<T>(string csvContent, string headerName, char cellSeparator = CSVDataHelper.CommaCharacter, bool supportCellMultiline = true)
         {
             if (!TryInitConvertColumnByName<T>(csvContent, headerName, cellSeparator, supportCellMultiline, out var csvTableReader)) return null;
-            var index = Array.IndexOf(csvTableReader.Headers[0], headerName);
+            var index = Array.IndexOf(csvTableReader.Headers[0].Cells, headerName);
             List<T> dataList = new List<T>(csvTableReader.RecordRow);
             foreach (var record in csvTableReader.Records)
                 dataList.Add(FieldConverter.Convert<T>(record.Cells[index]));
@@ -58,7 +58,7 @@ namespace GameUtil.Config
         public static IEnumerable<T> ConvertColumnEnumerator<T>(string csvContent, string headerName, char cellSeparator = CSVDataHelper.CommaCharacter, bool supportCellMultiline = true)
         {
             if (!TryInitConvertColumnByName<T>(csvContent, headerName, cellSeparator, supportCellMultiline, out var csvTableReader)) yield break;
-            var index = Array.IndexOf(csvTableReader.Headers[0], headerName);
+            var index = Array.IndexOf(csvTableReader.Headers[0].Cells, headerName);
             foreach (var record in csvTableReader.Records)
                 yield return FieldConverter.Convert<T>(record.Cells[index]);
         }
@@ -155,7 +155,7 @@ namespace GameUtil.Config
         public static IList ConvertColumn(Type dataType, string csvContent, string headerName, char cellSeparator = CSVDataHelper.CommaCharacter, bool supportCellMultiline = true)
         {
             if (!TryInitConvertColumnByName(dataType, csvContent, headerName, cellSeparator, supportCellMultiline, out var csvTableReader)) return null;
-            var index = Array.IndexOf(csvTableReader.Headers[0], headerName);
+            var index = Array.IndexOf(csvTableReader.Headers[0].Cells, headerName);
             var dataList = Activator.CreateInstance(typeof(List<>).MakeGenericType(dataType), csvTableReader.RecordRow) as IList;
             foreach (var record in csvTableReader.Records)
                 dataList.Add(FieldConverter.Convert(dataType, record.Cells[index]));
@@ -168,7 +168,7 @@ namespace GameUtil.Config
         public static IEnumerable ConvertColumnEnumerator(Type dataType, string csvContent, string headerName, char cellSeparator = CSVDataHelper.CommaCharacter, bool supportCellMultiline = true)
         {
             if (!TryInitConvertColumnByName(dataType, csvContent, headerName, cellSeparator, supportCellMultiline, out var csvTableReader)) yield break;
-            var index = Array.IndexOf(csvTableReader.Headers[0], headerName);
+            var index = Array.IndexOf(csvTableReader.Headers[0].Cells, headerName);
             foreach (var record in csvTableReader.Records)
                 yield return FieldConverter.Convert(dataType, record.Cells[index]);
         }
@@ -213,26 +213,27 @@ namespace GameUtil.Config
 
             //生成所有的字段信息
             var fieldNames = csvTableReader.Headers[0];
-            int fieldLen = fieldNames.Length;
+            int fieldLen = fieldNames.Column;
             fieldInfos = new FieldInfo[fieldLen];
             for (int i = 0; i < fieldLen; i++)
             {
+                var fieldName = fieldNames.Cells[i];
                 //Skip empty header column.
-                if (string.IsNullOrEmpty(fieldNames[i]))
+                if (string.IsNullOrEmpty(fieldName))
                 {
                     fieldInfos[i] = null;
                     continue;
                 }
                 try
                 {
-                    var fieldInfo = dataType.GetField(fieldNames[i]);
+                    var fieldInfo = dataType.GetField(fieldName);
                     fieldInfos[i] = fieldInfo;
                     if (fieldInfo == null)
-                        Debug.LogError("fieldName Exception: field info is null! " + fieldNames[i]);
+                        Debug.LogError("fieldName Exception: field info is null! " + fieldName);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError("fieldName Exception. " + fieldNames[i]);
+                    Debug.LogError("fieldName Exception. " + fieldName);
                     Debug.LogError(e);
                 }
             }
@@ -268,7 +269,7 @@ namespace GameUtil.Config
                 return false;
             }
             csvTableReader = new CSVTableReader(csvContent, HeaderRow, cellSeparator, supportCellMultiline);
-            if (!csvTableReader.Headers[0].Contains(headerName))
+            if (!csvTableReader.Headers[0].Cells.Contains(headerName))
             {
                 Debug.LogError($"ConvertColumn Exception: Header {headerName} does not exist!");
                 return false;
@@ -285,9 +286,9 @@ namespace GameUtil.Config
                 return false;
             }
             csvTableReader = new CSVTableReader(csvContent, HeaderRow, cellSeparator, supportCellMultiline);
-            if (csvTableReader.Headers[0].Length <= headerIndex)
+            if (csvTableReader.Headers[0].Column <= headerIndex)
             {
-                Debug.LogError($"ConvertColumn Exception: headerIndex {headerIndex} is out of range! Table column is {csvTableReader.Headers[0].Length}.");
+                Debug.LogError($"ConvertColumn Exception: headerIndex {headerIndex} is out of range! Table column is {csvTableReader.Headers[0].Column}.");
                 return false;
             }
             return true;
